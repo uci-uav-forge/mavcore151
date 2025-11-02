@@ -8,11 +8,13 @@ from mavcore.mav_message import MAVMessage, thread_safe
 MAV_MODE_CUSTOM = 0
 NO_FLAGS = 0
 
+
 class MAVType(IntEnum):
     QUADROTOR = 2
     GCS = 6
     VTOL_FIXED_ROTOR = 22
     ONBOARD_CONTROLLER = 18
+
 
 class MAV_AUTOPILOT(IntEnum):
     AUTOPILOT_INVALID = 8  # Not a valid autopilot, e.g. a GCS
@@ -66,7 +68,12 @@ class Heartbeat(MAVMessage):
     Heartbeat message to send and receive heartbeats.
     """
 
-    def __init__(self, callback_func: Callable[[Any], None] = lambda x: None, target_system=1, target_component=1):
+    def __init__(
+        self,
+        callback_func: Callable[[Any], None] = lambda x: None,
+        target_system=1,
+        target_component=1,
+    ):
         super().__init__("HEARTBEAT", repeat_period=1.0, callback_func=callback_func)
         self.type_id = MAVType.ONBOARD_CONTROLLER.value
         self.state = MAVState(-1)
@@ -86,18 +93,21 @@ class Heartbeat(MAVMessage):
             system_status=MAVState.ACTIVE.value,
             mavlink_version=2,
         )
-    
+
     def wait_for_first(self):
-        while (self.state == MAVState.UNINITIALIZED):
+        while self.state == MAVState.UNINITIALIZED:
             time.sleep(0.5)
-    
+
     @thread_safe
     def isArmed(self) -> bool:
         return bool(self.mask >> 7)
 
     @thread_safe
     def decode(self, msg):
-        if msg.get_srcSystem() == self.target_system and msg.get_srcComponent() == self.target_component:
+        if (
+            msg.get_srcSystem() == self.target_system
+            and msg.get_srcComponent() == self.target_component
+        ):
             self.type_id = msg.type
             self.state = MAVState(msg.system_status)
             self.src_sys = msg.get_srcSystem()
