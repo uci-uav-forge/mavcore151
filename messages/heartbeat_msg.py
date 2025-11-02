@@ -66,7 +66,7 @@ class Heartbeat(MAVMessage):
     Heartbeat message to send and receive heartbeats.
     """
 
-    def __init__(self, callback_func: Callable[[Any], None] = lambda x: None):
+    def __init__(self, callback_func: Callable[[Any], None] = lambda x: None, target_system=1, target_component=1):
         super().__init__("HEARTBEAT", repeat_period=1.0, callback_func=callback_func)
         self.type_id = MAVType.ONBOARD_CONTROLLER.value
         self.state = MAVState(-1)
@@ -74,6 +74,8 @@ class Heartbeat(MAVMessage):
         self.src_sys = -1
         self.src_comp = -1
         self.mode = FlightMode(-1)
+        self.target_system = target_system
+        self.target_component = target_component
 
     def encode(self, system_id, component_id):
         return dialect.MAVLink_heartbeat_message(
@@ -85,20 +87,23 @@ class Heartbeat(MAVMessage):
             mavlink_version=2,
         )
     
+    def wait_for_first(self):
+        while (self.state == MAVState.UNINITIALIZED):
+            time.sleep(0.5)
+    
     @thread_safe
     def isArmed(self) -> bool:
-        while (self.state != MAVState.UNKNOWN):
-            time.sleep(0.5)
         return bool(self.mask >> 7)
 
     @thread_safe
     def decode(self, msg):
-        self.type_id = msg.type
-        self.state = MAVState(msg.system_status)
-        self.src_sys = msg.get_srcSystem()
-        self.src_comp = msg.get_srcComponent()
-        self.mask = msg.base_mode
-        self.mode = FlightMode(msg.custom_mode)
+        if msg.get_srcSystem() == self.target_system and msg.get_srcComponent() == self.target_component:
+            self.type_id = msg.type
+            self.state = MAVState(msg.system_status)
+            self.src_sys = msg.get_srcSystem()
+            self.src_comp = msg.get_srcComponent()
+            self.mask = msg.base_mode
+            self.mode = FlightMode(msg.custom_mode)
 
     def __repr__(self) -> str:
         return f"(HEARTBEAT) timestamp: {self.timestamp} ms, type: {self.type_id}, state: {self.state.name}, system: {self.src_sys}, component: {self.src_comp}"
