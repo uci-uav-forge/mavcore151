@@ -1,16 +1,24 @@
 import pymavlink.dialects.v20.all as dialect
-from enum import Enum
+from enum import IntEnum
 from typing import Any, Callable
+import time
 
-from mavcore.mav_message import MAVMessage
+from mavcore.mav_message import MAVMessage, thread_safe
 
-MAV_TYPE_GCS = 6
-MAV_AUTOPILOT_INVALID = 8  # Not a valid autopilot, e.g. a GCS
 MAV_MODE_CUSTOM = 0
 NO_FLAGS = 0
 
+class MAVType(IntEnum):
+    QUADROTOR = 2
+    GCS = 6
+    VTOL_FIXED_ROTOR = 22
+    ONBOARD_CONTROLLER = 18
 
-class MAVState(Enum):
+class MAV_AUTOPILOT(IntEnum):
+    AUTOPILOT_INVALID = 8  # Not a valid autopilot, e.g. a GCS
+
+
+class MAVState(IntEnum):
     UNKNOWN = -1
     UNINITIALIZED = 0
     BOOTING_UP = 1
@@ -23,7 +31,7 @@ class MAVState(Enum):
     FLIGHT_TERMINATION = 8
 
 
-class FlightMode(Enum):
+class FlightMode(IntEnum):
     UNKNOWN = -1
     STABILIZE = 0
     ACRO = 1
@@ -60,7 +68,7 @@ class Heartbeat(MAVMessage):
 
     def __init__(self, callback_func: Callable[[Any], None] = lambda x: None):
         super().__init__("HEARTBEAT", repeat_period=1.0, callback_func=callback_func)
-        self.type_id = -1
+        self.type_id = MAVType.ONBOARD_CONTROLLER.value
         self.state = MAVState(-1)
         self.mask = 0
         self.src_sys = -1
@@ -69,17 +77,21 @@ class Heartbeat(MAVMessage):
 
     def encode(self, system_id, component_id):
         return dialect.MAVLink_heartbeat_message(
-            type=MAV_TYPE_GCS,
-            autopilot=MAV_AUTOPILOT_INVALID,
+            type=self.type_id,
+            autopilot=MAV_AUTOPILOT.AUTOPILOT_INVALID.value,
             base_mode=MAV_MODE_CUSTOM,
             custom_mode=NO_FLAGS,
-            system_status=MAVState.UNINITIALIZED.value,
+            system_status=MAVState.ACTIVE.value,
             mavlink_version=2,
         )
-
+    
+    @thread_safe
     def isArmed(self) -> bool:
+        while (self.state != MAVState.UNKNOWN):
+            time.sleep(0.5)
         return bool(self.mask >> 7)
 
+    @thread_safe
     def decode(self, msg):
         self.type_id = msg.type
         self.state = MAVState(msg.system_status)
