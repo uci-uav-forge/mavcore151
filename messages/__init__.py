@@ -29,3 +29,8 @@ from mavcore.messages.request_msg_interval_msg import (
 )
 from mavcore.messages.set_home_msg import SetHome as SetHome
 from mavcore.messages.reboot_msg import RebootMsg as RebootMsg
+from mavcore.messages.fence_mission_msgs import (
+    FenceMissionClearAll as FenceMissionClearAll,
+    FenceMissionCount as FenceMissionCount,
+    FenceMissionItemInt as FenceMissionItemInt,
+)

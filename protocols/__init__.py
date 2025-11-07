@@ -13,3 +13,10 @@ from mavcore.protocols.request_msg_protocol import (
 )
 from mavcore.protocols.set_home_protocol import SetHomeProtocol as SetHomeProtocol
 from mavcore.protocols.reboot_protocol import RebootProtocol as RebootProtocol
+
+from mavcore.protocols.fence_clear_protocol import (
+    FenceClearProtocol as FenceClearProtocol,
+)
+from mavcore.protocols.fence_upload_protocol import (
+    FenceUploadProtocol as FenceUploadProtocol,
+)
