@@ -1,9 +1,9 @@
 from dataclasses import dataclass
-from pymavlink.dialects.v20 import common as mav
+import pymavlink.dialects.v20.all as dialect 
 
 
 @dataclass
-class FenceMissionClearAll:
+class FenceMissionClearAll(MAVMessage):
     """
     Wrapper for MISSION_CLEAR_ALL (mission_type = FENCE).
     """
@@ -11,16 +11,16 @@ class FenceMissionClearAll:
     target_system: int = 1
     target_component: int = 1
 
-    def to_mavlink(self) -> mav.MAVLink_mission_clear_all_message:
-        return mav.MAVLink_mission_clear_all_message(
+    def encode(self, target_system, target_component) -> dialect.MAVLink_mission_clear_all_message:
+        return dialect.MAVLink_mission_clear_all_message(
             target_system=self.target_system,
             target_component=self.target_component,
-            mission_type=mav.MAV_MISSION_TYPE_FENCE,
+            mission_type=dialect.MAV_MISSION_TYPE_FENCE,
         )
 
 
 @dataclass
-class FenceMissionCount:
+class FenceMissionCount(MAVMessage):
     """
     Wrapper for MISSION_COUNT (mission_type = FENCE).
     """
@@ -29,17 +29,17 @@ class FenceMissionCount:
     target_system: int = 1
     target_component: int = 1
 
-    def to_mavlink(self) -> mav.MAVLink_mission_count_message:
-        return mav.MAVLink_mission_count_message(
+    def encode(self, target_system, target_component) -> dialect.MAVLink_mission_count_message:
+        return dialect.MAVLink_mission_count_message(
             target_system=self.target_system,
             target_component=self.target_component,
             count=self.count,
-            mission_type=mav.MAV_MISSION_TYPE_FENCE,
+            mission_type=dialect.MAV_MISSION_TYPE_FENCE,
         )
 
 
 @dataclass
-class FenceMissionItemInt:
+class FenceMissionItemInt(MAVMessage):
     """
     Wrapper for MISSION_ITEM_INT (mission_type = FENCE) for a single polygon vertex.
     """
@@ -52,18 +52,18 @@ class FenceMissionItemInt:
     target_system: int = 1
     target_component: int = 1
 
-    def to_mavlink(self) -> mav.MAVLink_mission_item_int_message:
+    def encode(self, target_system, target_component)-> dialect.MAVLink_mission_item_int_message:
         command = (
-            mav.MAV_CMD_NAV_FENCE_POLYGON_VERTEX_INCLUSION
+            dialect.MAV_CMD_NAV_FENCE_POLYGON_VERTEX_INCLUSION
             if self.inclusion
-            else mav.MAV_CMD_NAV_FENCE_POLYGON_VERTEX_EXCLUSION
+            else dialect.MAV_CMD_NAV_FENCE_POLYGON_VERTEX_EXCLUSION
         )
 
-        return mav.MAVLink_mission_item_int_message(
+        return dialect.MAVLink_mission_item_int_message(
             target_system=self.target_system,
             target_component=self.target_component,
             seq=self.seq,
-            frame=mav.MAV_FRAME_GLOBAL,
+            frame=dialect.MAV_FRAME_GLOBAL,
             command=command,
             current=0,
             autocontinue=0,
@@ -74,5 +74,5 @@ class FenceMissionItemInt:
             x=int(self.lat_deg * 1e7),
             y=int(self.lon_deg * 1e7),
             z=0.0,
-            mission_type=mav.MAV_MISSION_TYPE_FENCE,
+            mission_type=dialect.MAV_MISSION_TYPE_FENCE,
         )
