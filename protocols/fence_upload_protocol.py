@@ -1,14 +1,10 @@
 import time
-from dataclasses import dataclass
-from typing import List, Tuple
-from mavcore.messages.command_ack_msg import CommandAck
+from mavcore.messages import MissionAck
 from pymavlink.dialects.v20 import common as mav
-
 from mavcore.mav_protocol import MAVProtocol
-from mavcore.messages import FenceMissionCount, FenceMissionItemInt
+from mavcore.messages import FenceMissionCount, FenceMissionItemInt, MissionRequestInt, MissionType
 
 
-@dataclass
 class FenceUploadProtocol(MAVProtocol):
     """
     Uploads polygon vertices via the Mission sub-protocol (MAV_MISSION_TYPE_FENCE).
@@ -21,65 +17,63 @@ class FenceUploadProtocol(MAVProtocol):
       3. MISSION_ACK (FENCE)
     """
 
-    vertices_deg: List[Tuple[float, float]]
-    inclusion: bool = True  # False => EXCLUSION polygon
-    target_system: int = 1
-    target_component: int = 1
-    handshake_timeout_s: float = 10.0
-    ack_timeout_s: float = 3.0
-
-    def __post_init__(self):
+    def __init__(self, vertices: list[tuple[float, float]],  target_system: int = 1, target_component: int = 0):
         super().__init__()
-        self.ack_msg: CommandAck()
+        self.vertices = vertices
+        self.target_system = target_system
+        self.target_component = target_component
+       
+        self.handshake_timeout_s: float = 10.0
+        self.ack_timeout_s: float = 3.0
+
+        self.ack_msg = MissionAck()
+        self.mission_req_msg = MissionRequestInt()
 
     def run(self, sender, receiver):
-        n = len(self.vertices_deg)
-        if n < 3:
-            self.ack_msg = "ERROR: need at least 3 vertices"
-            return
-
         # 1) Send MISSION_COUNT(FENCE)
         count_msg = FenceMissionCount(
-            count=n,
+            count=len(self.vertices),
             target_system=self.target_system,
             target_component=self.target_component,
         )
+        future_req = receiver.wait_for_msg(self.mission_req_msg, blocking=False)
         sender.send_msg(count_msg)
 
         # 2) Serve MISSION_REQUEST_INT(FENCE) with MISSION_ITEM_INT(FENCE)
         sent = 0
         deadline = time.time() + self.handshake_timeout_s
 
-        while sent < n and time.time() < deadline:
-            req = receiver.recv_match(
-                type="MISSION_REQUEST_INT", blocking=True, timeout=1.0
-            )
-            if not req or req.mission_type != mav.MAV_MISSION_TYPE_FENCE:
+        while sent < len(self.vertices) and time.time() < deadline:
+            future_req.wait_until_finished()
+            if self.mission_req_msg.mission_type != MissionType.FENCE:
                 continue
 
-            seq = int(req.seq)
-            if seq < 0 or seq >= n:
+            seq = self.mission_req_msg.seq
+            if seq < 0 or seq >= len(self.vertices):
                 continue
 
-            lat, lon = self.vertices_deg[seq]
+            lat, lon = self.vertices[seq]
 
             item_msg = FenceMissionItemInt(
                 seq=seq,
                 lat_deg=float(lat),
                 lon_deg=float(lon),
-                total_vertices=n,
-                inclusion=self.inclusion,
+                total_vertices=len(self.vertices),
+                inclusion=True,
                 target_system=self.target_system,
                 target_component=self.target_component,
             )
+            if sent + 1 < len(self.vertices):
+                future_req = receiver.wait_for_msg(self.mission_req_msg, blocking=False)
+            else:
+                future_ack = receiver.wait_for_msg(self.ack_msg, blocking=False)
+
             sender.send_msg(item_msg)
             sent += 1
 
-        if sent != n:
-            self.ack_msg = f"ERROR: sent {sent}/{n} fence vertices"
+        if sent != len(self.vertices):
+            print(f"ERROR: sent {sent}/{len(self.vertices)} fence vertices")
             return
 
         # 3) Wait for MISSION_ACK(FENCE)
-        t0 = time.time()
-        future_ack = receiver.wait_for_msg(self.ack_msg, blocking=False)
         future_ack.wait_until_finished()

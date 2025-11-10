@@ -15,8 +15,8 @@ from mavcore.protocols.set_home_protocol import SetHomeProtocol as SetHomeProtoc
 from mavcore.protocols.reboot_protocol import RebootProtocol as RebootProtocol
 
 from mavcore.protocols.fence_clear_protocol import (
-    FenceClearProtocol as FenceClearProtocol,
+    FenceClearProtocol as FenceClearProtocol
 )
 from mavcore.protocols.fence_upload_protocol import (
-    FenceUploadProtocol as FenceUploadProtocol,
+    FenceUploadProtocol as FenceUploadProtocol
 )
