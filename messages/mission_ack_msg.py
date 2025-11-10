@@ -6,6 +6,7 @@ from mavcore.messages.mission_request_msg import MissionType
 
 from enum import IntEnum
 
+
 class MissionResult(IntEnum):
     UNKNOWN = -1
     ACCEPTED = 0
@@ -24,6 +25,7 @@ class MissionResult(IntEnum):
     INVALID_SEQUENCE = 13
     DENIED = 14
     OPERATION_CANCELLED = 15
+
 
 class MissionAck(MAVMessage):
     """

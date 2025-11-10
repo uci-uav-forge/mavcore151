@@ -10,6 +10,7 @@ class FenceClearProtocol(MAVProtocol):
     """
     Sends MISSION_CLEAR_ALL (mission_type = FENCE) and waits for MISSION_ACK(FENCE).
     """
+
     def __init__(self, target_system: int = 1, target_component: int = 0):
         super().__init__()
         self.target_system = target_system

@@ -1,14 +1,13 @@
 from mavcore.mav_message import MAVMessage
-import pymavlink.dialects.v20.all as dialect 
+import pymavlink.dialects.v20.all as dialect
 
 
 class FenceMissionClearAll(MAVMessage):
     """
     Wrapper for MISSION_CLEAR_ALL (mission_type = FENCE).
     """
-    def __init__(self,
-                 target_system: int = 1,
-                 target_component: int = 0):
+
+    def __init__(self, target_system: int = 1, target_component: int = 0):
         super().__init__("MISSION_CLEAR_ALL")
         self.target_system = target_system
         self.target_component = target_component
@@ -25,15 +24,12 @@ class FenceMissionCount(MAVMessage):
     """
     Wrapper for MISSION_COUNT (mission_type = FENCE).
     """
-    def __init__(self,
-                 count: int,
-                 target_system: int = 1,
-                 target_component: int = 0):
+
+    def __init__(self, count: int, target_system: int = 1, target_component: int = 0):
         super().__init__("MISSION_COUNT")
         self.count = count
         self.target_system = target_system
         self.target_component = target_component
-    
 
     def encode(self, system_id, component_id):
         return dialect.MAVLink_mission_count_message(
@@ -48,15 +44,17 @@ class FenceMissionItemInt(MAVMessage):
     """
     Wrapper for MISSION_ITEM_INT (mission_type = FENCE) for a single polygon vertex.
     """
+
     def __init__(
-            self,     
-            seq: int,
-            lat_deg: float,
-            lon_deg: float,
-            total_vertices: int,
-            inclusion: bool = True,  # False => exclusion polygon
-            target_system: int = 1,
-            target_component: int = 0):
+        self,
+        seq: int,
+        lat_deg: float,
+        lon_deg: float,
+        total_vertices: int,
+        inclusion: bool = True,  # False => exclusion polygon
+        target_system: int = 1,
+        target_component: int = 0,
+    ):
         super().__init__("MISSION_ITEM_INT")
         self.seq = seq
         self.lat_deg = lat_deg

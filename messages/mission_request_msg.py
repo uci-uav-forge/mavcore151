@@ -1,6 +1,7 @@
 from mavcore.mav_message import MAVMessage
 from enum import IntEnum
 
+
 class MissionType(IntEnum):
     UNINITIALIZED = -1
     MISSION = 0
@@ -8,13 +9,16 @@ class MissionType(IntEnum):
     RALLY = 2
     ALL = 255
 
+
 class MissionRequestInt(MAVMessage):
     """
     Mission request message saying which mission item is being requested.
     """
 
     def __init__(self):
-        super().__init__("MISSION_REQUEST")  # Should be MISSION_REQUEST_INT but possible bug in pymavlink
+        super().__init__(
+            "MISSION_REQUEST"
+        )  # Should be MISSION_REQUEST_INT but possible bug in pymavlink
         self.mission_type = MissionType(-1)
         self.seq = -1
 

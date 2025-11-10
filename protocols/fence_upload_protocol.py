@@ -2,7 +2,12 @@ import time
 from mavcore.messages import MissionAck
 from pymavlink.dialects.v20 import common as mav
 from mavcore.mav_protocol import MAVProtocol
-from mavcore.messages import FenceMissionCount, FenceMissionItemInt, MissionRequestInt, MissionType
+from mavcore.messages import (
+    FenceMissionCount,
+    FenceMissionItemInt,
+    MissionRequestInt,
+    MissionType,
+)
 
 
 class FenceUploadProtocol(MAVProtocol):
@@ -17,12 +22,17 @@ class FenceUploadProtocol(MAVProtocol):
       3. MISSION_ACK (FENCE)
     """
 
-    def __init__(self, vertices: list[tuple[float, float]],  target_system: int = 1, target_component: int = 0):
+    def __init__(
+        self,
+        vertices: list[tuple[float, float]],
+        target_system: int = 1,
+        target_component: int = 0,
+    ):
         super().__init__()
         self.vertices = vertices
         self.target_system = target_system
         self.target_component = target_component
-       
+
         self.handshake_timeout_s: float = 10.0
         self.ack_timeout_s: float = 3.0
 
