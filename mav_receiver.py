@@ -32,9 +32,12 @@ class Receiver:
             msg_name = msg_name.name
         if index >= 0 and msg_name in self.listeners and index < len(self.listeners[msg_name]):
             self.listeners[msg_name].pop(index)
+            return True
+        elif msg_name in self.listeners:
+            self.listeners.pop(msg_name)
+            return True
         else:
-            self.listeners.pop(msg_name, None)
-        return True
+            return False
 
     def start_receiving(self):
         self.receiving = True
