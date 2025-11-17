@@ -13,19 +13,18 @@ class Receiver:
         self.history_size = history_size
         self.receiving = False
 
-    def add_listener(self, msg: MAVMessage) -> MAVMessage:
-        if msg.name in self.listeners:
-            self.listeners[msg.name].append(msg)
+    def __add_to_dict(self, target_dict: dict, msg: MAVMessage) -> MAVMessage:
+        if msg.name in target_dict:
+            target_dict[msg.name].append(msg)
         else:
-            self.listeners[msg.name] = [msg]
+            target_dict[msg.name] = [msg]
         return msg
     
+    def add_listener(self, msg: MAVMessage) -> MAVMessage:
+        return self.__add_to_dict(self.listeners, msg)
+    
     def __add_waiter(self, msg: MAVMessage) -> MAVMessage:
-        if msg.name in self.waiting:
-            self.waiting[msg.name].append(msg)
-        else:
-            self.waiting[msg.name] = [msg]
-        return msg
+        return self.__add_to_dict(self.waiting, msg)
     
     def remove_listener(self, msg_name: MAVMessage | str, index: int = -1) -> bool:
         if isinstance(msg_name, MAVMessage):
