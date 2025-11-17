@@ -22,8 +22,7 @@ class MAVDevice:
         attempt_reconnect: bool = True,
     ):
         self.attempt_reconnect = attempt_reconnect
-        self.listeners = []
-        self.receiver = Receiver(self.listeners)
+        self.receiver = Receiver()
         self.connection: utility.mavudp | utility.mavserial = self._connect(
             device_address, baud_rate, source_system, source_component
         )
@@ -75,7 +74,7 @@ class MAVDevice:
         """
         Pass in a MAVMessage to listen for. Will save occurences of this message and update this message object accordingly.
         """
-        self.listeners.append(listener)
+        self.receiver.add_listener(listener)
         return listener
 
     def run_protocol(self, protocol: MAVProtocol) -> MAVProtocol:
@@ -92,4 +91,4 @@ class MAVDevice:
             msg = self.connection.recv_match(blocking=True, timeout=1)
             if msg:
                 timestamp_ms = time.time() * 1000
-                self.receiver.queue.put((timestamp_ms, msg))
+                self.receiver.update_queue(timestamp_ms, msg)

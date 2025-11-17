@@ -1,20 +1,40 @@
-import queue
-import threading
 import time
-
+import threading
+from queue import Queue
+from typing import Any
 from mavcore.mav_message import MAVMessage
 
-MAX_QUEUE_SIZE = 500
-HISTORY_SIZE = 10
-
-
 class Receiver:
-    def __init__(self, listeners: list[MAVMessage]):
+    def __init__(self, history_size: int = 100):
         self.history_dict: dict[str, list] = {}
-        self.queue = queue.Queue()
-        self.listeners = listeners
-        self.waiting: list[MAVMessage] = []
+        self.queue = Queue()
+        self.listeners : dict[str, list[MAVMessage]] = {}
+        self.waiting: dict[str, list[MAVMessage]] = {}
+        self.history_size = history_size
         self.receiving = False
+
+    def add_listener(self, msg: MAVMessage) -> MAVMessage:
+        if msg.name in self.listeners:
+            self.listeners[msg.name].append(msg)
+        else:
+            self.listeners[msg.name] = [msg]
+        return msg
+    
+    def __add_waiter(self, msg: MAVMessage) -> MAVMessage:
+        if msg.name in self.waiting:
+            self.waiting[msg.name].append(msg)
+        else:
+            self.waiting[msg.name] = [msg]
+        return msg
+    
+    def remove_listener(self, msg_name: MAVMessage | str, index: int = -1) -> bool:
+        if isinstance(msg_name, MAVMessage):
+            msg_name = msg_name.name
+        if index >= 0 and msg_name in self.listeners and index < len(self.listeners[msg_name]):
+            self.listeners[msg_name].pop(index)
+        else:
+            self.listeners.pop(msg_name, None)
+        return True
 
     def start_receiving(self):
         self.receiving = True
@@ -24,35 +44,36 @@ class Receiver:
     def stop_receiving(self):
         self.receiving = False
 
+    def update_queue(self, timestamp_ms: float, msg: Any):
+        self.queue.put((timestamp_ms, msg))
+
     def process(self):
         while self.receiving:
             timestamp_ms, msg = self.queue.get()
             msg_name = msg.get_type()
 
             # Check if waiting for this message
-            found = []
-            for wait_msg in self.waiting:
-                if wait_msg.name == msg_name:
+            if msg_name in self.waiting:
+                for wait_msg in self.waiting[msg_name]:
                     wait_msg.timestamp = timestamp_ms
                     wait_msg.decode(msg)
                     wait_msg.process()
-                    found.append(wait_msg)
-            for m in found:
-                self.waiting.remove(m)
+                self.waiting.pop(msg_name)
 
             # Update listeners
-            for listener in self.listeners:
-                if listener.name == msg_name and listener.timestamp != timestamp_ms:
-                    listener.timestamp = timestamp_ms
-                    listener.decode(msg)
-                    listener.process()
+            if msg_name in self.listeners:
+                for listener in self.listeners[msg_name]:
+                    if listener.timestamp < timestamp_ms:
+                        listener.timestamp = timestamp_ms
+                        listener.decode(msg)
+                        listener.process()
 
             # Manage message history
             if msg_name in self.history_dict:
                 self.history_dict[msg_name].insert(0, (timestamp_ms, msg))
 
                 # Manage history length
-                if len(self.history_dict[msg_name]) > HISTORY_SIZE:
+                if len(self.history_dict[msg_name]) > self.history_size:
                     self.history_dict[msg_name].pop()
             else:
                 # Brand new message type
@@ -74,15 +95,9 @@ class Receiver:
 
         timeout_timer = time.time()
         msg.timestamp = 0.0
-        self.waiting.append(msg)
+        self.__add_waiter(msg)
         while msg.timestamp == 0.0 and (
             timeout_seconds < 0 or time.time() - timeout_timer < timeout_seconds
         ):
-            time.sleep(0.001)
-
-        try:
-            self.waiting.remove(msg)
-        except Exception:
-            pass
-
+            time.sleep(0.01)
         return msg
