@@ -6,7 +6,7 @@ from mavcore.messages.global_position_msg import GlobalPosition
 
 import bisect
 import numpy as np
-from mavcore.mav_pose import Pose
+from mavcore.types.mav_pose import Pose
 
 class FullPose(MAVMessage):
     """
