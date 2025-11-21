@@ -56,7 +56,7 @@ class FullPose(MAVMessage):
     def __repr__(self) -> str:
         return f"(FULL_POSE) timestamp: {self.timestamp} ms,\n  {self.attitude}\n  {self.local_position}\n  {self.global_position}"
     
-    def pose_callback(self):
+    def pose_callback(self, msg):
         """
         Updates the pose buffer with the current local position and attitude.
         Maintains the buffer size by removing the oldest entry if necessary.
@@ -103,3 +103,10 @@ class FullPose(MAVMessage):
         t1, pose1 = self.timestamp_buffer[idx], self.pose_buffer[idx]
         proportion = (timestamp - t0) / (t1 - t0)
         return pose0.interpolate(pose1, proportion)
+    
+    def __repr__(self):
+        out = "FullPose\n"
+        for sub in self.submessages:
+            out += sub.__repr__()
+        out += "\n"
+        return out

@@ -46,4 +46,4 @@ class LocalPosition(MAVMessage):
 
     def __repr__(self) -> str:
         return f"(LOCAL_POSITION_NED) timestamp: {self.timestamp} ms, time_since_boot {self.time_boot_ms} ms, \
-            position: {self.get_pos_ned()}, velocity: {self.get_vel()}"
+            position: {self.get_pos_ned()}, velocity: {self.get_vel_ned()}"
