@@ -4,8 +4,8 @@ import threading
 
 
 def thread_safe(func):
-    def wrapper(*args, **kwargs):
-        self = args[0]
+    def wrapper(*args, **kwargs) -> Any:
+        self : MAVMessage = args[0]
         self._lock.acquire()
         output = func(*args, **kwargs)
         self._lock.release()
@@ -38,8 +38,9 @@ class MAVMessage:
         self.priority = priority
         self.repeat_period = repeat_period
         self.callback_func = callback_func
-        self._thread: None | threading.Thread = None
         self._lock = threading.Lock()
+        self._thread: None | threading.Thread = None
+        self.submessages: list[MAVMessage] = []
 
     def process(self):
         """
