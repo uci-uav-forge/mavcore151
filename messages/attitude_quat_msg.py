@@ -1,5 +1,6 @@
-from mavcore.mav_message import MAVMessage
+from mavcore.mav_message import MAVMessage, thread_safe
 
+import numpy as np
 
 class AttitudeQuat(MAVMessage):
     """
@@ -35,6 +36,10 @@ class AttitudeQuat(MAVMessage):
         self.pitchspeed = msg.pitchspeed
         self.yawspeed = msg.yawspeed
         self.quat_offset = msg.repr_offset_q # Mavlink 2 only
+
+    @thread_safe
+    def get_quat(self) -> np.ndarray:
+        return np.array([self.w, self.x, self.y, self.z])
 
     def __repr__(self) -> str:
         return f"(ATTITUDE_QUATERNION) timestamp: {self.timestamp} ms, quat: [{self.w}, {self.x}, {self.y}, {self.z}], quat_offset: {self.quat_offset}"

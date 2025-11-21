@@ -19,8 +19,8 @@ from mavcore.messages.full_pose_msg import FullPose as FullPose
 from mavcore.messages.global_position_msg import GlobalPosition as GlobalPosition
 from mavcore.messages.heartbeat_msg import Heartbeat as Heartbeat
 from mavcore.messages.request_msg_interval_msg import IntervalMessageID as IntervalMessageID
-from mavcore.messages.local_position_ned_msg import (
-    LocalPositionNED as LocalPositionNED,
+from mavcore.messages.local_position_msg import (
+    LocalPosition as LocalPosition,
 )
 from mavcore.messages.mission_ack_msg import MissionAck as MissionAck
 from mavcore.messages.mission_request_msg import MissionRequestInt as MissionRequestInt

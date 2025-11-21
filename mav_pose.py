@@ -31,6 +31,13 @@ class Pose(NamedTuple):
             position=np.array(d["position"]),
             rotation=Rotation.from_quat(d["rotation_quat"]),
         )
+    
+    @staticmethod
+    def from_array(position : np.ndarray, quat : np.ndarray, order: bool = True):
+        return Pose(
+            position=position,
+            rotation=Rotation.from_quat(quat, scalar_first=order),
+        )
 
     def interpolate(self, other: Pose_T, proportion: float):
         """
