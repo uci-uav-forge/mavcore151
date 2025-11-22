@@ -37,7 +37,7 @@ class FullPose(MAVMessage):
 
     def get_local_position(self, timestamp=None) -> Pose:
         if timestamp is not None:
-            return self._get_interpolated_pose(timestamp*1000)
+            return self._get_interpolated_pose(timestamp)
         return Pose.from_array(
             position=self.local_position.get_pos_enu(),
             quat=self.attitude.get_quat(),
@@ -62,7 +62,7 @@ class FullPose(MAVMessage):
         Maintains the buffer size by removing the oldest entry if necessary.
         """
         current_pose = self.get_local_position()
-        if abs(self.attitude.timestamp - self.local_position.timestamp) > 100:
+        if abs(self.attitude.timestamp - self.local_position.timestamp) > 0.1:
             print("Warning: Discarding pose since Attitude and Local Position timestamps differ by more than 100 ms.")
             return
         self.timestamp = np.average([self.attitude.timestamp, self.local_position.timestamp])
@@ -90,19 +90,19 @@ class FullPose(MAVMessage):
             pose0 = self.pose_buffer[0]
             pose1 = self.pose_buffer[1]
             proportion = (timestamp - self.timestamp_buffer[0]) / (self.timestamp_buffer[1] - self.timestamp_buffer[0])
-            return pose0.interpolate(pose1, proportion)
+            return pose0.interpolate(pose1, proportion, timestamp)
         elif timestamp > self.timestamp_buffer[-1]:
             pose0 = self.pose_buffer[-2]
             pose1 = self.pose_buffer[-1]
             proportion = (timestamp - self.timestamp_buffer[-2]) / (self.timestamp_buffer[-1] - self.timestamp_buffer[-2])
-            return pose0.interpolate(pose1, proportion)
+            return pose0.interpolate(pose1, proportion, timestamp)
 
         # find the two poses surrounding the timestamp
         idx = bisect.bisect_left(self.timestamp_buffer, timestamp)
         t0, pose0 = self.timestamp_buffer[idx-1], self.pose_buffer[idx - 1]
         t1, pose1 = self.timestamp_buffer[idx], self.pose_buffer[idx]
         proportion = (timestamp - t0) / (t1 - t0)
-        return pose0.interpolate(pose1, proportion)
+        return pose0.interpolate(pose1, proportion, timestamp)
     
     def __repr__(self):
         out = "FullPose : Timestamp: "+str(self.timestamp)+" ms\n"

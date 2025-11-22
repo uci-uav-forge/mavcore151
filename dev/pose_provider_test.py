@@ -17,6 +17,8 @@ request_pos = protocols.RequestMessageProtocol(
         )
 device.run_protocol(request_pos)
 
-while True:
-    print(full_pose.get_local_position(time.time()-0.5))
-    time.sleep(0.1)
+timeout = time.time() + 10.0
+while time.time() < timeout:
+    pose = full_pose.get_local_position(time.time()-0.5)
+    print(time.time(), pose.timestamp)
+    time.sleep(0.05)

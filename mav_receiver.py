@@ -61,12 +61,13 @@ class Receiver:
     def process(self):
         while self.receiving:
             timestamp_ms, msg = self.queue.get()
+            timestamp = timestamp_ms / 1000.0  # convert to seconds
             msg_name = msg.get_type()
 
             # Check if waiting for this message
             if msg_name in self.waiting:
                 for wait_msg in self.waiting[msg_name]:
-                    wait_msg.timestamp = timestamp_ms
+                    wait_msg.timestamp = timestamp
                     wait_msg.decode(msg)
                     wait_msg.process()
                 self.waiting.pop(msg_name)
@@ -74,21 +75,21 @@ class Receiver:
             # Update listeners
             if msg_name in self.listeners:
                 for listener in self.listeners[msg_name]:
-                    if listener.timestamp < timestamp_ms:
-                        listener.timestamp = timestamp_ms
+                    if listener.timestamp < timestamp:
+                        listener.timestamp = timestamp
                         listener.decode(msg)
                         listener.process()
 
             # Manage message history
             if msg_name in self.history_dict:
-                self.history_dict[msg_name].insert(0, (timestamp_ms, msg))
+                self.history_dict[msg_name].insert(0, (timestamp, msg))
 
                 # Manage history length
                 if len(self.history_dict[msg_name]) > self.history_size:
                     self.history_dict[msg_name].pop()
             else:
                 # Brand new message type
-                self.history_dict[msg_name] = [(timestamp_ms, msg)]
+                self.history_dict[msg_name] = [(timestamp, msg)]
 
     def wait_for_msg(
         self, msg: MAVMessage, timeout_seconds: float = -1.0, blocking=True

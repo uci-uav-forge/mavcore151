@@ -14,32 +14,36 @@ class Pose(NamedTuple):
     '''
     position: np.ndarray
     rotation: Rotation
+    timestamp: float = 0.0  # in seconds
 
     @staticmethod
-    def identity():
+    def identity() -> "Pose":
         return Pose(np.zeros(3), Rotation.identity())
 
-    def to_dict(self):
+    def to_dict(self) -> dict:
         return {
+            "timestamp": self.timestamp,
             "position": self.position.tolist(),
             "rotation_quat": self.rotation.as_quat().tolist(),
         }
 
     @staticmethod
-    def from_dict(d):
+    def from_dict(d : dict) -> "Pose":
         return Pose(
             position=np.array(d["position"]),
             rotation=Rotation.from_quat(d["rotation_quat"]),
+            timestamp=d.get("timestamp", 0.0),
         )
     
     @staticmethod
-    def from_array(position : np.ndarray, quat : np.ndarray, order: bool = True):
+    def from_array(position : np.ndarray, quat : np.ndarray, order: bool = True, timestamp: float = 0.0) -> "Pose":
         return Pose(
             position=position,
             rotation=Rotation.from_quat(quat, scalar_first=order),
+            timestamp=timestamp,
         )
 
-    def interpolate(self, other: Pose_T, proportion: float):
+    def interpolate(self, other: Pose_T, proportion: float, timestamp: float = 0.0) -> "Pose":
         """
         Interpolates or extrapolates between two poses.
         "proportion" is effectively a bias between A and B. I
@@ -54,6 +58,7 @@ class Pose(NamedTuple):
                 rotation=Slerp(  # This interpolates two rotations. For complicated math reasons, it isn't as simple as interpolating vectors.
                     [0, 1], Rotation.concatenate([self.rotation, other.rotation])
                 )(proportion),
+                timestamp=timestamp,
             )
         # extrapolate
         rel_rot = other.rotation * self.rotation.inv()
@@ -63,6 +68,7 @@ class Pose(NamedTuple):
                 # No slerp here because we can scale directly for extrapolation
                 Rotation.from_rotvec(rel_rot.as_rotvec() * proportion) * self.rotation
             ),
+            timestamp=timestamp,
         )
 
     def __eq__(self, other: Pose_T):
