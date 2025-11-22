@@ -28,7 +28,7 @@ class GlobalPosition(MAVMessage):
         self.vx = msg.vx / 100.0
         self.vy = msg.vy / 100.0
         self.vz = msg.vz / 100.0
-        self.heading = msg.hdg
+        self.heading = msg.hdg / 100.0
 
     def get_pos(self):
         return np.array([self.lat, self.lon, self.alt_relative])

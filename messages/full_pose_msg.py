@@ -105,8 +105,8 @@ class FullPose(MAVMessage):
         return pose0.interpolate(pose1, proportion)
     
     def __repr__(self):
-        out = "FullPose\n"
+        out = "FullPose : Timestamp: "+str(self.timestamp)+" ms\n"
         for sub in self.submessages:
-            out += sub.__repr__()
+            out += sub.__repr__()+"\n"
         out += "\n"
         return out

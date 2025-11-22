@@ -7,6 +7,7 @@ from mavcore.mav_message import MAVMessage
 class IntervalMessageID(Enum):
     GPS_RAW_INT = 24
     ATTITUDE = 30
+    ATTITUDE_QUATERNION = 31
     LOCAL_POSITION_NED = 32
     GLOBAL_POSITION_INT = 33
     BATTERY_STATUS = 147
