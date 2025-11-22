@@ -37,7 +37,7 @@ class FullPose(MAVMessage):
 
     def get_local_position(self, timestamp=None) -> Pose:
         if timestamp is not None:
-            return self._get_interpolated_pose(timestamp)
+            return self._get_interpolated_pose(timestamp*1000)
         return Pose.from_array(
             position=self.local_position.get_pos_enu(),
             quat=self.attitude.get_quat(),

@@ -18,5 +18,5 @@ request_pos = protocols.RequestMessageProtocol(
 device.run_protocol(request_pos)
 
 while True:
-    print(full_pose.global_position.heading)
+    print(full_pose.get_local_position(time.time()-0.5))
     time.sleep(0.1)
