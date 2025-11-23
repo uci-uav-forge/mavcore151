@@ -16,8 +16,14 @@ request_pos = protocols.RequestMessageProtocol(
 request_att = protocols.RequestMessageProtocol(
             messages.IntervalMessageID.ATTITUDE_QUATERNION, rate_hz=30.0
         )
-device.run_protocol(request_pos)
-device.run_protocol(request_att)
+
+while(True):
+    device.run_protocol(request_pos)
+    device.run_protocol(request_att)
+    time.sleep(5.0)
+    print(full_pose.local_position.hz)
+    if full_pose.local_position.hz > 25.0:
+        break
 
 ts = []
 save = []
@@ -30,7 +36,6 @@ while time.time() - start < timeout:
     ts.append(pose.timestamp)
     time.sleep(0.05)
 
-print(full_pose.local_position.hz)
 
 ts2 = []
 save2 = []
