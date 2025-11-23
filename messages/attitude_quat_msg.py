@@ -25,7 +25,7 @@ class AttitudeQuat(MAVMessage):
         self.rollspeed = 0.0  # angular speed in radians/sec
         self.pitchspeed = 0.0  # angular speed in radians/sec
         self.yawspeed = 0.0  # angular speed in radians/sec
-        self.quat_offset = 0.0
+        self.quat_offset = [0.0, 0.0, 0.0, 0.0] # Turns out not
 
     def decode(self, msg):
         self.w = msg.q1
