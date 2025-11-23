@@ -27,7 +27,7 @@ class MAVMessage:
         Designed to be an interface/template for a MAVMessage:
 
         name: the mavlink message name to look for
-        timestamp: the time in miliseconds the message was recieved
+        timestamp: the time in seconds the message was recieved
         priority: unused for now
         repeat_period: the interval at which the message will be repeatedly sent
         callback_func: a function that will be executed when this message is recieved and processed,
@@ -41,6 +41,20 @@ class MAVMessage:
         self._lock = threading.Lock()
         self._thread: None | threading.Thread = None
         self.submessages: list[MAVMessage] = []
+        self.hz = 0.0  # calculated receive rate
+        self._msg_count = 0
+
+    def update_timestamp(self, timestamp: float):
+        if self.timestamp == 0.0:
+            self.timestamp = timestamp
+            return
+        # New average = old average * (n-1)/n + new value /n
+        self._msg_count += 1
+        new_dt = timestamp - self.timestamp
+        old_dt = 1.0 / self.hz if self.hz > 0.0 else new_dt
+        avg_dt = old_dt * ((self._msg_count - 1) / self._msg_count) + new_dt / self._msg_count
+        self.hz = 1.0 / avg_dt if avg_dt > 0.0 else 0.0
+        self.timestamp = timestamp
 
     def process(self):
         """

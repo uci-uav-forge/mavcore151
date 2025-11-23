@@ -76,7 +76,7 @@ class Receiver:
             if msg_name in self.listeners:
                 for listener in self.listeners[msg_name]:
                     if listener.timestamp < timestamp:
-                        listener.timestamp = timestamp
+                        listener.update_timestamp(timestamp)
                         listener.decode(msg)
                         listener.process()
 

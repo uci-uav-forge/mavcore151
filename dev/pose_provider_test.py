@@ -11,54 +11,52 @@ full_pose = messages.FullPose()
 device.add_listener(full_pose)
 
 request_pos = protocols.RequestMessageProtocol(
-            messages.IntervalMessageID.LOCAL_POSITION_NED
+            messages.IntervalMessageID.LOCAL_POSITION_NED, rate_hz=30.0
+        )
+request_att = protocols.RequestMessageProtocol(
+            messages.IntervalMessageID.ATTITUDE_QUATERNION, rate_hz=30.0
         )
 device.run_protocol(request_pos)
-request_pos = protocols.RequestMessageProtocol(
-            messages.IntervalMessageID.ATTITUDE_QUATERNION
-        )
-device.run_protocol(request_pos)
+device.run_protocol(request_att)
 
 ts = []
 save = []
-timeout = 2.0
+timeout = 3.0
 start = time.time()
 print("Collecting ground truth poses...")
 while time.time() - start < timeout:
     pose = full_pose.get_local_position()
     save.append(pose)
     ts.append(pose.timestamp)
-    time.sleep(0.1)
+    time.sleep(0.05)
+
+print(full_pose.local_position.hz)
 
 ts2 = []
 save2 = []
-timeout = 20.0
+timeout = 3.0
 start = time.time()
-max_size = 0.0
 print("Collecting delayed poses...")
 while time.time() - start < timeout:
-    pose = full_pose.get_local_position(time.time() - 2.0)
+    pose = full_pose.get_local_position(time.time() - 3.0)
     save2.append(pose)
     ts2.append(pose.timestamp)
-    max_size = max(max_size, len(full_pose.timestamp_buffer))
     time.sleep(0.05)
 
-
-print(f"Max timestamp buffer difference observed: {max_size:.3f} s")
-# for t, p in zip(ts2, save2):
-#     i = bisect.bisect_left(ts, t)
-#     if i == 0:
-#         p_ref = save[0]
-#     elif i == len(ts):
-#         p_ref = save[-1]
-#     else:
-#         t0, t1 = ts[i-1], ts[i]
-#         p0, p1 = save[i-1], save[i]
-#         prop = (t - t0) / (t1 - t0)
-#         p_ref = p0.interpolate(p1, prop, timestamp=t)
+for t, p in zip(ts2, save2):
+    i = bisect.bisect_left(ts, t)
+    if i == 0:
+        p_ref = save[0]
+    elif i == len(ts):
+        p_ref = save[-1]
+    else:
+        t0, t1 = ts[i-1], ts[i]
+        p0, p1 = save[i-1], save[i]
+        prop = (t - t0) / (t1 - t0)
+        p_ref = p0.interpolate(p1, prop, timestamp=t)
     
-#     pos_err = np.linalg.norm(p.position - p_ref.position)
-#     rot_err = np.linalg.norm(p.as_rotvec() - p_ref.as_rotvec())
-#     assert pos_err < 0.05, f"Position error too high at t={t}: {pos_err} m"
-#     assert rot_err < 0.1, f"Rotation error too high at t={t}: {rot_err} rad"
-#     print(f"t={t:.2f}: Position error: {pos_err:.3f} m, Rotation error: {rot_err:.3f} rad")
+    pos_err = np.linalg.norm(p.position - p_ref.position)
+    rot_err = np.linalg.norm(p.as_rotvec() - p_ref.as_rotvec())
+    # assert pos_err < 0.05, f"Position error too high at t={t}: {pos_err} m"
+    # assert rot_err < 0.1, f"Rotation error too high at t={t}: {rot_err} rad"
+    print(f"t={t:.2f}: Position error: {pos_err:.3f} m, Rotation error: {rot_err:.3f} rad")
