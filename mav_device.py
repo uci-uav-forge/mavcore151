@@ -89,5 +89,4 @@ class MAVDevice:
         while self.reading:
             msg = self.connection.recv_match(blocking=True, timeout=1)
             if msg:
-                timestamp_ms = time.time() * 1000
-                self.receiver.update_queue(timestamp_ms, msg)
+                self.receiver.update_queue(time.time(), msg)

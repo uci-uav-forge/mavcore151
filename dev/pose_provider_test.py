@@ -36,6 +36,15 @@ while time.time() - start < timeout:
     ts.append(pose.timestamp)
     time.sleep(0.05)
 
+# ts2 = []
+# save2 = []
+# timeout = 3.0
+# start = time.time()
+# for t in ts:
+#     pose = full_pose.get_local_position(t)
+#     save2.append(pose)
+#     ts2.append(pose.timestamp)
+#     time.sleep(0.05)
 
 ts2 = []
 save2 = []

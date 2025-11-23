@@ -60,8 +60,7 @@ class Receiver:
 
     def process(self):
         while self.receiving:
-            timestamp_ms, msg = self.queue.get()
-            timestamp = timestamp_ms / 1000.0  # convert to seconds
+            timestamp, msg = self.queue.get()
             msg_name = msg.get_type()
 
             # Check if waiting for this message
