@@ -42,18 +42,17 @@ class MAVMessage:
         self._thread: None | threading.Thread = None
         self.submessages: list[MAVMessage] = []
         self.hz = 0.0  # calculated receive rate
-        self._msg_count = 0
+        self._10past = []
 
     def update_timestamp(self, timestamp: float):
         if self.timestamp == 0.0:
             self.timestamp = timestamp
             return
-        # New average = old average * (n-1)/n + new value /n
-        self._msg_count += 1
-        new_dt = timestamp - self.timestamp
-        old_dt = 1.0 / self.hz if self.hz > 0.0 else new_dt
-        avg_dt = old_dt * ((self._msg_count - 1) / self._msg_count) + new_dt / self._msg_count
-        self.hz = 1.0 / avg_dt if avg_dt > 0.0 else 0.0
+        dt = timestamp - self.timestamp
+        self._10past.append(dt)
+        if len(self._10past) > 10:
+            self._10past.pop(0)
+        self.hz = len(self._10past) / sum(self._10past)
         self.timestamp = timestamp
 
     def process(self):
