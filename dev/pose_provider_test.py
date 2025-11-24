@@ -51,11 +51,14 @@ save2 = []
 timeout = 3.0
 start = time.time()
 print("Collecting delayed poses...")
+past = 3.0
 while time.time() - start < timeout:
-    pose = full_pose.get_local_position(time.time() - 3.0)
+    pose = full_pose.get_local_position(time.time() - past)
     save2.append(pose)
     ts2.append(pose.timestamp)
     time.sleep(0.05)
+
+print("Comparing interpolated poses to ground truth...")
 
 for t, p in zip(ts2, save2):
     i = bisect.bisect_left(ts, t)
@@ -74,3 +77,7 @@ for t, p in zip(ts2, save2):
     # assert pos_err < 0.05, f"Position error too high at t={t}: {pos_err} m"
     # assert rot_err < 0.1, f"Rotation error too high at t={t}: {rot_err} rad"
     print(f"t={t:.2f}: Position error: {pos_err:.3f} m, Rotation error: {rot_err:.3f} rad")
+
+print("Current pose:")
+print(full_pose)
+print("Pose interpolation test completed.")

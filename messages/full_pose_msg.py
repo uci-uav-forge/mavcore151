@@ -102,8 +102,8 @@ class FullPose(MAVMessage):
         idx = bisect.bisect_left(self.timestamp_buffer, timestamp)
         t0, pose0 = self.timestamp_buffer[idx-1], self.pose_buffer[idx - 1]
         t1, pose1 = self.timestamp_buffer[idx], self.pose_buffer[idx]
-        print(f"Interpolating between t0={t0} s and t1={t1} s for requested timestamp={timestamp}")
         proportion = (timestamp - t0) / (t1 - t0)
+        # print(f"Interpolating between t0={t0} s and t1={t1} s for requested timestamp={timestamp} with proportion={proportion}")
         return pose0.interpolate(pose1, proportion, timestamp)
     
     def __repr__(self):

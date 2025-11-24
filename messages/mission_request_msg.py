@@ -27,4 +27,4 @@ class MissionRequestInt(MAVMessage):
         self.seq = msg.seq
 
     def __repr__(self):
-        return f"(MISSION_REQUEST_INT) timestamp: {self.timestamp} ms, type: {self.mission_type.name}, seq: {self.seq}"
+        return f"(MISSION_REQUEST_INT) timestamp: {self.timestamp} s, type: {self.mission_type.name}, seq: {self.seq}"

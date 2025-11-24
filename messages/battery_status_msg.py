@@ -50,4 +50,4 @@ class BatteryStatus(MAVMessage):
         self.soc = msg.battery_remaining
 
     def __repr__(self) -> str:
-        return f"(BATTERY_STATUS) timestamp: {self.timestamp} ms, voltages: {self.voltages}, soc: {self.soc}%, func: {self.bat_func.name}, type: {self.bat_type.name}"
+        return f"(BATTERY_STATUS) timestamp: {self.timestamp} s, voltages: {self.voltages}, soc: {self.soc}%, func: {self.bat_func.name}, type: {self.bat_type.name}"

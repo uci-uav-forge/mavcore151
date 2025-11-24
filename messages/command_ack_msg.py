@@ -32,4 +32,4 @@ class CommandAck(MAVMessage):
         self.result = MAVResult(msg.result)
 
     def __repr__(self):
-        return f"(COMMAND_ACK) timestamp: {self.timestamp} ms, command_id: {self.command_id}, result: {self.result.name}"
+        return f"(COMMAND_ACK) timestamp: {self.timestamp} s, command_id: {self.command_id}, result: {self.result.name}"

@@ -42,4 +42,4 @@ class MissionAck(MAVMessage):
         self.mission_type = MissionType(msg.mission_type)
 
     def __repr__(self):
-        return f"(COMMAND_ACK) timestamp: {self.timestamp} ms, result: {self.result.name}, type: {self.mission_type.name}"
+        return f"(COMMAND_ACK) timestamp: {self.timestamp} s, result: {self.result.name}, type: {self.mission_type.name}"

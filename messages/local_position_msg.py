@@ -42,8 +42,8 @@ class LocalPosition(MAVMessage):
     
     @thread_safe
     def get_vel_enu(self) -> np.ndarray:
-        return np.array([self.y, self.x, -self.z])
+        return np.array([self.vy, self.vx, -self.vz])
 
     def __repr__(self) -> str:
-        return f"(LOCAL_POSITION_NED) timestamp: {self.timestamp} ms, time_since_boot {self.time_boot_ms} ms, \
-            position: {self.get_pos_ned()}, velocity: {self.get_vel_ned()}"
+        return f"(LOCAL_POSITION) timestamp: {self.timestamp} s \n \
+            position: {self.get_pos_enu()}, velocity: {self.get_vel_enu()}"

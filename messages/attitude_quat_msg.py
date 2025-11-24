@@ -25,7 +25,7 @@ class AttitudeQuat(MAVMessage):
         self.rollspeed = 0.0  # angular speed in radians/sec
         self.pitchspeed = 0.0  # angular speed in radians/sec
         self.yawspeed = 0.0  # angular speed in radians/sec
-        self.quat_offset = [0.0, 0.0, 0.0, 0.0] # Turns out not
+        self.quat_offset = [0.0, 0.0, 0.0, 0.0] # Not supported in Ardupilot?
 
     def decode(self, msg):
         self.w = msg.q1
@@ -42,4 +42,5 @@ class AttitudeQuat(MAVMessage):
         return np.array([self.w, self.x, self.y, self.z])
 
     def __repr__(self) -> str:
-        return f"(ATTITUDE_QUATERNION) timestamp: {self.timestamp} ms, quat: [{self.w}, {self.x}, {self.y}, {self.z}], quat_offset: {self.quat_offset}"
+        return f"(ATTITUDE_QUATERNION) timestamp: {self.timestamp} s \n \
+            quat: [{self.w}, {self.x}, {self.y}, {self.z}]"
