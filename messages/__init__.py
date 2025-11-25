@@ -4,9 +4,10 @@ from mavcore.messages.arm_msg import Arm as Arm
 from mavcore.messages.attitude_msg import Attitude as Attitude
 from mavcore.messages.attitude_quat_msg import AttitudeQuat as AttitudeQuat
 from mavcore.messages.battery_status_msg import (
-    BatteryFunction as BatteryFunction, 
-    BatteryStatus as BatteryStatus, 
-    BatteryType as BatteryType)
+    BatteryFunction as BatteryFunction,
+    BatteryStatus as BatteryStatus,
+    BatteryType as BatteryType,
+)
 from mavcore.messages.command_ack_msg import CommandAck as CommandAck
 from mavcore.messages.fence_mission_msgs import (
     FenceMissionClearAll as FenceMissionClearAll,
@@ -18,7 +19,9 @@ from mavcore.messages.heartbeat_msg import FlightMode as FlightMode
 from mavcore.messages.full_pose_msg import FullPose as FullPose
 from mavcore.messages.global_position_msg import GlobalPosition as GlobalPosition
 from mavcore.messages.heartbeat_msg import Heartbeat as Heartbeat
-from mavcore.messages.request_msg_interval_msg import IntervalMessageID as IntervalMessageID
+from mavcore.messages.request_msg_interval_msg import (
+    IntervalMessageID as IntervalMessageID,
+)
 from mavcore.messages.local_position_msg import (
     LocalPosition as LocalPosition,
 )
