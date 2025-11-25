@@ -4,8 +4,8 @@ import threading
 
 
 def thread_safe(func):
-    def wrapper(*args, **kwargs):
-        self = args[0]
+    def wrapper(*args, **kwargs) -> Any:
+        self : MAVMessage = args[0]
         self._lock.acquire()
         output = func(*args, **kwargs)
         self._lock.release()
@@ -27,7 +27,7 @@ class MAVMessage:
         Designed to be an interface/template for a MAVMessage:
 
         name: the mavlink message name to look for
-        timestamp: the time in miliseconds the message was recieved
+        timestamp: the time in seconds the message was recieved
         priority: unused for now
         repeat_period: the interval at which the message will be repeatedly sent
         callback_func: a function that will be executed when this message is recieved and processed,
@@ -38,8 +38,22 @@ class MAVMessage:
         self.priority = priority
         self.repeat_period = repeat_period
         self.callback_func = callback_func
-        self._thread: None | threading.Thread = None
         self._lock = threading.Lock()
+        self._thread: None | threading.Thread = None
+        self.submessages: list[MAVMessage] = []
+        self.hz = 0.0  # calculated receive rate
+        self._10past = []
+
+    def update_timestamp(self, timestamp: float):
+        if self.timestamp == 0.0:
+            self.timestamp = timestamp
+            return
+        dt = timestamp - self.timestamp
+        self._10past.append(dt)
+        if len(self._10past) > 10:
+            self._10past.pop(0)
+        self.hz = len(self._10past) / sum(self._10past)
+        self.timestamp = timestamp
 
     def process(self):
         """

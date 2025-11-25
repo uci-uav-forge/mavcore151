@@ -9,12 +9,10 @@ from mavcore.mav_receiver import Receiver
 class Sender:
     def __init__(
         self,
-        receiver: Receiver,
         sys_id: int,
         component_id: int,
         connection: utility.mavudp | utility.mavserial,
     ):
-        self.receiver = receiver
         self.sys_id = sys_id
         self.component_id = component_id
         self.connection = connection

@@ -116,4 +116,4 @@ class Heartbeat(MAVMessage):
             self.mode = FlightMode(msg.custom_mode)
 
     def __repr__(self) -> str:
-        return f"(HEARTBEAT) timestamp: {self.timestamp} ms, type: {self.type_id}, state: {self.state.name}, system: {self.src_sys}, component: {self.src_comp}"
+        return f"(HEARTBEAT) timestamp: {self.timestamp} s, type: {self.type_id}, state: {self.state.name}, system: {self.src_sys}, component: {self.src_comp}"

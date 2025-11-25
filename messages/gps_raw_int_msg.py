@@ -30,4 +30,4 @@ class GPSRaw(MAVMessage):
         self.sats = msg.satellites_visible
 
     def __repr__(self) -> str:
-        return f"(GPS_RAW_INT) timestamp: {self.timestamp} ms, fix_type: {self.fix_type.name}, sats: {self.sats}"
+        return f"(GPS_RAW_INT) timestamp: {self.timestamp} s, fix_type: {self.fix_type.name}, sats: {self.sats}"

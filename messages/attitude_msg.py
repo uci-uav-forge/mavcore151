@@ -24,4 +24,4 @@ class Attitude(MAVMessage):
         self.yawspeed = msg.yawspeed
 
     def __repr__(self) -> str:
-        return f"(ATTITUDE) timestamp: {self.timestamp} ms, pitch: {self.pitch}, roll: {self.roll}"
+        return f"(ATTITUDE) timestamp: {self.timestamp} s, pitch: {self.pitch}, roll: {self.roll}"

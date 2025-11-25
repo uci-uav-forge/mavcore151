@@ -14,11 +14,15 @@ class Receiver:
         self.history_size = history_size
         self.receiving = False
 
-    def __add_to_dict(self, target_dict: dict, msg: MAVMessage) -> MAVMessage:
-        if msg.name in target_dict:
-            target_dict[msg.name].append(msg)
+    def __add_to_dict(self, target_dict: dict[str, list[MAVMessage]], msg: MAVMessage) -> MAVMessage:
+        if(len(msg.submessages) > 0):
+            for submsg in msg.submessages:
+                self.__add_to_dict(target_dict, submsg)
         else:
-            target_dict[msg.name] = [msg]
+            if msg.name in target_dict:
+                target_dict[msg.name].append(msg)
+            else:
+                target_dict[msg.name] = [msg]
         return msg
 
     def add_listener(self, msg: MAVMessage) -> MAVMessage:
@@ -27,22 +31,22 @@ class Receiver:
     def __add_waiter(self, msg: MAVMessage) -> MAVMessage:
         return self.__add_to_dict(self.waiting, msg)
 
-    def remove_listener(self, msg_name: MAVMessage | str, index: int = -1) -> bool:
-        if isinstance(msg_name, MAVMessage):
-            msg_name = msg_name.name
-        if (
-            index >= 0
-            and msg_name in self.listeners
-            and index < len(self.listeners[msg_name])
-        ):
-            self.listeners[msg_name].pop(index)
-            return True
-        elif msg_name in self.listeners:
-            self.listeners.pop(msg_name)
-            return True
+    def remove_listener(self, msg: MAVMessage | str) -> bool:
+        if isinstance(msg, str):
+            res = self.listeners.pop(msg, None) # removes all with that message name
+            return res is not None
         else:
-            return False
-
+            if(len(msg.submessages) > 0):
+                removed_all = True
+                for submsg in msg.submessages:
+                    removed = self.remove_listener(submsg)
+                    removed_all = removed_all and removed
+                return removed_all
+            elif msg.name in self.listeners and msg in self.listeners[msg.name]:
+                self.listeners[msg.name].remove(msg)
+                return True
+        return False
+    
     def start_receiving(self):
         self.receiving = True
         self._thread = threading.Thread(target=self.process, daemon=True)
@@ -56,13 +60,13 @@ class Receiver:
 
     def process(self):
         while self.receiving:
-            timestamp_ms, msg = self.queue.get()
+            timestamp, msg = self.queue.get()
             msg_name = msg.get_type()
 
             # Check if waiting for this message
             if msg_name in self.waiting:
                 for wait_msg in self.waiting[msg_name]:
-                    wait_msg.timestamp = timestamp_ms
+                    wait_msg.timestamp = timestamp
                     wait_msg.decode(msg)
                     wait_msg.process()
                 self.waiting.pop(msg_name)
@@ -70,21 +74,21 @@ class Receiver:
             # Update listeners
             if msg_name in self.listeners:
                 for listener in self.listeners[msg_name]:
-                    if listener.timestamp < timestamp_ms:
-                        listener.timestamp = timestamp_ms
+                    if listener.timestamp < timestamp:
+                        listener.update_timestamp(timestamp)
                         listener.decode(msg)
                         listener.process()
 
             # Manage message history
             if msg_name in self.history_dict:
-                self.history_dict[msg_name].insert(0, (timestamp_ms, msg))
+                self.history_dict[msg_name].insert(0, (timestamp, msg))
 
                 # Manage history length
                 if len(self.history_dict[msg_name]) > self.history_size:
                     self.history_dict[msg_name].pop()
             else:
                 # Brand new message type
-                self.history_dict[msg_name] = [(timestamp_ms, msg)]
+                self.history_dict[msg_name] = [(timestamp, msg)]
 
     def wait_for_msg(
         self, msg: MAVMessage, timeout_seconds: float = -1.0, blocking=True
