@@ -74,3 +74,5 @@ device = MAVDevice("udp:127.0.0.1:14550")
 
 3. If you want to perform commands on the drone thats not in your script go back to the terminal you started up the sitl in. It is interactive and you can issue [mavproxy commands](https://ardupilot.org/mavproxy/docs/getting_started/cheatsheet.html) to it.
 Just press `enter` a couple times on the terminal to see the mavproxy vehicle mode prefix.
+
+NOTE: When running on the SITL, mavproxy automatically sends message interval requests for several messages. This means you may see messages published during your script in the SITL that don't appear when testing in person on a real flight controller. Remember to double check your message requests.
