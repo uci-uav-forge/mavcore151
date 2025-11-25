@@ -13,12 +13,16 @@ device.add_listener(full_pose)
 request_pos = protocols.RequestMessageProtocol(
             messages.IntervalMessageID.LOCAL_POSITION_NED, rate_hz=30.0
         )
+request_pos_global = protocols.RequestMessageProtocol(
+            messages.IntervalMessageID.GLOBAL_POSITION_INT, rate_hz=30.0
+        )
 request_att = protocols.RequestMessageProtocol(
             messages.IntervalMessageID.ATTITUDE_QUATERNION, rate_hz=30.0
         )
 
 while(True):
     device.run_protocol(request_pos)
+    device.run_protocol(request_pos_global)
     device.run_protocol(request_att)
     time.sleep(5.0)
     print(full_pose.local_position.hz)
