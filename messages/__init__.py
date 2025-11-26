@@ -45,5 +45,6 @@ from mavcore.messages.set_home_msg import SetHome as SetHome
 from mavcore.messages.set_mode_msg import SetMode as SetMode
 from mavcore.messages.setpoint_local_msg import SetpointLocal as SetpointLocal
 from mavcore.messages.status_text_msg import StatusText as StatusText
+from mavcore.messages.system_time_msg import SystemTime as SystemTime
 from mavcore.messages.takeoff_msg import Takeoff as Takeoff
 from mavcore.messages.vfr_hud_msg import VFRHUD as VFRHUD
