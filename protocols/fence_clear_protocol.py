@@ -21,5 +21,9 @@ class FenceClearProtocol(MAVProtocol):
             target_component=self.target_component,
         )
 
+        self.ack_msg = CommandAck()
+
     def run(self, sender, receiver):
+        future_ack = receiver.wait_for_msg(self.ack_msg, blocking=False)
         sender.send_msg(self.clear_msg)
+        future_ack.wait_until_finished()

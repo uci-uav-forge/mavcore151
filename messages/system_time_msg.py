@@ -1,5 +1,6 @@
 from mavcore.mav_message import MAVMessage
 
+
 class SystemTime(MAVMessage):
     """
     Gets the system time.
