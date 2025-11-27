@@ -52,7 +52,7 @@ class Sender:
 
         self._check_disconnect()
 
-        mav_msg = msg.encode(
+        mav_msg = msg._encode(
             self.sys_id if not system_id else system_id,
             self.component_id if not component_id else component_id,
         )
