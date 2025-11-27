@@ -5,7 +5,7 @@ import threading
 
 def thread_safe(func):
     def wrapper(*args, **kwargs) -> Any:
-        self : MAVMessage = args[0]
+        self: MAVMessage = args[0]
         self._lock.acquire()
         output = func(*args, **kwargs)
         self._lock.release()
