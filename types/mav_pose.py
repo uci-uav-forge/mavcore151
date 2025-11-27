@@ -7,12 +7,14 @@ from scipy.spatial.transform import Rotation, Slerp
 # This is solely for type hinting the interpolate method that can take another Pose as an argument
 Pose_T = TypeVar("Pose_T", bound="Pose")
 
+
 class Pose(NamedTuple):
-    '''
+    """
     Position is represented as a 3D numpy array (x, y, z).
     Rotation is represented as a scipy Rotation object (quaternion internally).
     Timestamp is in seconds (optional defaults to 0.0).
-    '''
+    """
+
     position: np.ndarray
     rotation: Rotation
     timestamp: float = 0.0  # in seconds
@@ -27,48 +29,55 @@ class Pose(NamedTuple):
             "position": self.position.tolist(),
             "rotation_quat": self.rotation.as_quat().tolist(),
         }
-    
+
     def as_euler(self, seq: str = "zyx", degrees: bool = True) -> np.ndarray:
-        '''
+        """
         Returns the rotation as euler angles in the specified sequence.
         Default is 'zyx' (yaw, pitch, roll) in degrees.
-        '''
+        """
         return self.rotation.as_euler(seq, degrees=degrees)
-    
+
     def as_quat(self, scalar_first: bool = True) -> np.ndarray:
-        '''
+        """
         Returns the rotation as a quaternion numpy array.
         Default is scalar first (w, x, y, z).
         If scalar_first is False, returns (x, y, z, w).
-        '''
+        """
         quat = self.rotation.as_quat()  # returns (x, y, z, w)
         if scalar_first:
             return np.array([quat[3], quat[0], quat[1], quat[2]])
         return quat
-    
+
     def as_rotvec(self) -> np.ndarray:
-        '''
+        """
         Returns the rotation as a rotation vector (axis-angle representation).
-        '''
+        """
         return self.rotation.as_rotvec()
 
     @staticmethod
-    def from_dict(d : dict) -> "Pose":
+    def from_dict(d: dict) -> "Pose":
         return Pose(
             position=np.array(d["position"]),
             rotation=Rotation.from_quat(d["rotation_quat"]),
             timestamp=d.get("timestamp", 0.0),
         )
-    
+
     @staticmethod
-    def from_array(position : np.ndarray, quat : np.ndarray, order: bool = True, timestamp: float = 0.0) -> "Pose":
+    def from_array(
+        position: np.ndarray,
+        quat: np.ndarray,
+        order: bool = True,
+        timestamp: float = 0.0,
+    ) -> "Pose":
         return Pose(
             position=position,
             rotation=Rotation.from_quat(quat, scalar_first=order),
             timestamp=timestamp,
         )
 
-    def interpolate(self, other: Pose_T, proportion: float, timestamp: float = 0.0) -> "Pose":
+    def interpolate(
+        self, other: Pose_T, proportion: float, timestamp: float = 0.0
+    ) -> "Pose":
         """
         Interpolates or extrapolates between two poses.
         "proportion" is effectively a bias between A and B. I

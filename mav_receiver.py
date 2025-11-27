@@ -14,8 +14,10 @@ class Receiver:
         self.history_size = history_size
         self.receiving = False
 
-    def __add_to_dict(self, target_dict: dict[str, list[MAVMessage]], msg: MAVMessage) -> MAVMessage:
-        if(len(msg.submessages) > 0):
+    def __add_to_dict(
+        self, target_dict: dict[str, list[MAVMessage]], msg: MAVMessage
+    ) -> MAVMessage:
+        if len(msg.submessages) > 0:
             for submsg in msg.submessages:
                 self.__add_to_dict(target_dict, submsg)
         else:
@@ -33,10 +35,10 @@ class Receiver:
 
     def remove_listener(self, msg: MAVMessage | str) -> bool:
         if isinstance(msg, str):
-            res = self.listeners.pop(msg, None) # removes all with that message name
+            res = self.listeners.pop(msg, None)  # removes all with that message name
             return res is not None
         else:
-            if(len(msg.submessages) > 0):
+            if len(msg.submessages) > 0:
                 removed_all = True
                 for submsg in msg.submessages:
                     removed = self.remove_listener(submsg)
@@ -46,7 +48,7 @@ class Receiver:
                 self.listeners[msg.name].remove(msg)
                 return True
         return False
-    
+
     def start_receiving(self):
         self.receiving = True
         self._thread = threading.Thread(target=self.process, daemon=True)

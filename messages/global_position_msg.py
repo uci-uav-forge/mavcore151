@@ -35,7 +35,7 @@ class GlobalPosition(MAVMessage):
 
     def get_vel_ned(self):
         return (self.vx, self.vy, self.vz)
-    
+
     def get_vel_enu(self):
         return (self.vy, self.vx, -self.vz)
 
