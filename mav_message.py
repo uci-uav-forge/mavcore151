@@ -46,10 +46,15 @@ class MAVMessage:
         self.submessages: list[MAVMessage] = []
         # For calculating receive rate
         self.hz : float = 0.0 
-        self._10past : list[float] = []
-        # callbacks
-        self._callbackthread: None | threading.Thread = None
-        self.non_blocking: bool = False
+        self._pastdt : list[float] = []
+        '''
+        Callback processing. Similar to ROS each listener has its own thread for processing messages so that
+        one slow listener does not block others from being processed. There will be a queue of up to 15 messages
+        for each listener. If the queue is full, the oldest message will be dropped.
+        '''
+        self._msg_queue : "queue.Queue[Any]" = queue.Queue(maxsize=15)
+        self.end = False
+
 
     @thread_safe
     def update_timestamp(self, timestamp: float):
@@ -61,19 +66,34 @@ class MAVMessage:
             self.timestamp = timestamp
             return
         dt = timestamp - self.timestamp
-        self._10past.append(dt)
-        if len(self._10past) > 10:
-            self._10past.pop(0)
-        self.hz = len(self._10past) / sum(self._10past)
+        self._pastdt.append(dt)
+        if len(self._pastdt) > 10:
+            self._pastdt.pop(0)
+        self.hz = len(self._pastdt) / sum(self._pastdt)
         self.timestamp = timestamp
 
-    def process(self):
+    def _start_callback_thread(self):
         """
-        Automatically executes in main loop when receiving this message.<br>
-        If non-blocking flag is set, a new thread will be spawned to execute this method.<br>
+        Starts the internal thread for processing the decode and callback function. <br>
         Do not override this method.
         """
-        self.callback_func(self)
+        if self._thread is not None and self._thread.is_alive():
+            return  # Thread is already running
+        self.end = False
+        self._thread = threading.Thread(target=self._process, daemon=True)
+        self._thread.start()
+
+    def _process(self):
+        """
+        Internal method for processing the decode and callback function. <br>
+        Do not override this method. TODO: Make thread safe and fix conflict with waiting messages
+        """
+        while not self.end:
+            try:
+                msg = self._msg_queue.get(timeout=0.1)
+                self._decode(msg)
+            except queue.Empty:
+                continue
 
     @thread_safe
     def _encode(self, system_id, component_id) -> Any:
@@ -94,6 +114,7 @@ class MAVMessage:
         Thread-safe wrapper for decode. Do not override this method.
         """
         self.decode(msg)
+        self.callback_func(self)
 
     def decode(self, msg):
         """

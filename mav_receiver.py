@@ -68,7 +68,6 @@ class Receiver:
                 for wait_msg in self.waiting[msg_name]:
                     wait_msg.timestamp = timestamp
                     wait_msg._decode(msg)
-                    wait_msg.process()
                 self.waiting.pop(msg_name)
 
             # Update listeners
@@ -77,7 +76,6 @@ class Receiver:
                     if listener.timestamp < timestamp:
                         listener.update_timestamp(timestamp)
                         listener._decode(msg)
-                        listener.process()
 
             # Manage message history
             if msg_name in self.history_dict:

@@ -1,10 +1,8 @@
-import threading
 import time
+import threading
 import pymavlink.mavutil as utility
 
 from mavcore.mav_message import MAVMessage
-from mavcore.mav_receiver import Receiver
-
 
 class Sender:
     def __init__(
@@ -68,7 +66,7 @@ class Sender:
         while True:
             for payload in self.repeating_msgs:
                 msg, sys_id, comp_id = payload
-                if time.time() * 1000 - msg.timestamp > msg.repeat_period:
+                if time.time() - msg.timestamp > msg.repeat_period:
                     self.acquire()
                     self.send_msg(msg, sys_id, comp_id)
                     self.release()
