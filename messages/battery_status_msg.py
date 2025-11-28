@@ -1,6 +1,6 @@
 from enum import Enum
 
-from mavcore.mav_message import MAVMessage
+from mavcore.mav_message import MAVMessage, thread_safe
 
 
 class BatteryFunction(Enum):
@@ -49,5 +49,6 @@ class BatteryStatus(MAVMessage):
         self.energy_consumed = msg.energy_consumed
         self.soc = msg.battery_remaining
 
+    @thread_safe
     def __repr__(self) -> str:
         return f"(BATTERY_STATUS) timestamp: {self.timestamp} s, voltages: {self.voltages}, soc: {self.soc}%, func: {self.bat_func.name}, type: {self.bat_type.name}"

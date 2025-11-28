@@ -41,6 +41,7 @@ class AttitudeQuat(MAVMessage):
     def get_quat(self) -> np.ndarray:
         return np.array([self.w, self.x, self.y, self.z])
 
+    @thread_safe
     def __repr__(self) -> str:
         return f"(ATTITUDE_QUATERNION) timestamp: {self.timestamp} s \n \
             quat: [{self.w}, {self.x}, {self.y}, {self.z}]"

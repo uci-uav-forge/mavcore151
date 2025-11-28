@@ -1,7 +1,7 @@
 import pymavlink.dialects.v20.all as dialect
 from enum import Enum
 
-from mavcore.mav_message import MAVMessage
+from mavcore.mav_message import MAVMessage, thread_safe
 
 
 class IntervalMessageID(Enum):
@@ -42,5 +42,6 @@ class RequestMessageInterval(MAVMessage):
             param7=1.0,
         )
 
+    @thread_safe
     def __repr__(self):
         return f"(MAV_CMD_SET_MESSAGE_INTERVAL) timestamp: {self.timestamp}, msg_id: {self.msg_id.name}"

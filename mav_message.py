@@ -23,7 +23,6 @@ class MAVMessage:
         priority=0,
         repeat_period: float = 0.0,
         callback_func: Callable[[Any], None] = lambda msg: None,
-        non_blocking: bool = False,
     ):
         """
         Designed to be an interface/template for a MAVMessage:
@@ -41,7 +40,7 @@ class MAVMessage:
         self.priority = priority
         self.repeat_period = repeat_period
         self.callback_func = callback_func
-        self._lock = threading.Lock()
+        self._lock = threading.RLock()
         self._thread: None | threading.Thread = None
         self.submessages: list[MAVMessage] = []
         # For calculating receive rate
@@ -53,13 +52,17 @@ class MAVMessage:
         for each listener. If the queue is full, the oldest message will be dropped.
         '''
         self._msg_queue : "queue.Queue[Any]" = queue.Queue(maxsize=15)
+        self._decodethread: None | threading.Thread = None
+        self._queuelock = threading.Lock()
         self.end = False
 
+    def __del__(self):
+        self.stop_callback_thread()
 
     @thread_safe
     def update_timestamp(self, timestamp: float):
         """
-        Thread-safe wrapper for updating the timestamp and calculating the receive rate (hz).
+        Thread-safe for updating the timestamp and calculating the receive rate (hz).
         Do not override this method.
         """
         if self.timestamp == 0.0:
@@ -72,28 +75,65 @@ class MAVMessage:
         self.hz = len(self._pastdt) / sum(self._pastdt)
         self.timestamp = timestamp
 
+    @thread_safe
+    def get_hz(self) -> float:
+        """
+        Thread-safe for getting the receive rate (hz).
+        Do not override this method.
+        """
+        return int(self.hz)
+
+    @thread_safe
     def _start_callback_thread(self):
         """
         Starts the internal thread for processing the decode and callback function. <br>
         Do not override this method.
         """
-        if self._thread is not None and self._thread.is_alive():
+        if self._decodethread is not None and self._decodethread.is_alive():
             return  # Thread is already running
         self.end = False
-        self._thread = threading.Thread(target=self._process, daemon=True)
-        self._thread.start()
+        self._decodethread = threading.Thread(target=self._process, daemon=True)
+        self._decodethread.start()
+
+    @thread_safe
+    def stop_callback_thread(self):
+        """
+        Stops the internal thread for processing the decode and callback function. <br>
+        Do not override this method.
+        """
+        self.end = True
+        if self._decodethread is not None:
+            self._decodethread.join()
+            self._decodethread = None
+
+    @thread_safe
+    def process_message(self, msg: Any):
+        """
+        Adds a message to the internal queue for processing. <br>
+        Do not override this method.
+        """
+        with self._queuelock:
+            if self._msg_queue.full():
+                try:
+                    self._msg_queue.get_nowait()
+                except queue.Empty:
+                    pass
+            self._msg_queue.put(msg)
 
     def _process(self):
         """
         Internal method for processing the decode and callback function. <br>
-        Do not override this method. TODO: Make thread safe and fix conflict with waiting messages
+        Do not override this method.
         """
         while not self.end:
             try:
-                msg = self._msg_queue.get(timeout=0.1)
+                with self._queuelock:
+                    msg = self._msg_queue.get(timeout=0.1)
                 self._decode(msg)
             except queue.Empty:
+                time.sleep(0.02)
                 continue
+            time.sleep(0.02) # Assumes no message > 50 Hz
 
     @thread_safe
     def _encode(self, system_id, component_id) -> Any:
@@ -122,6 +162,7 @@ class MAVMessage:
         """
         pass
 
+    @thread_safe
     def __repr__(self) -> str:
         return f"({self.name}) timestamp: {self.timestamp} ms"
     
@@ -130,7 +171,7 @@ class MAVMessage:
 
     def wait_until_finished(self):
         """
-        Blocks until the internal thread is finished executing.
+        Blocks until the internal wait thread is finished executing.
         """
         if type(self._thread) is not threading.Thread:
             return
@@ -141,6 +182,6 @@ class MAVMessage:
 
     def is_finished(self) -> bool:
         """
-        Returns whether the internal thread is finished executing.
+        Returns whether the internal wait thread is finished executing.
         """
         return self._thread is None

@@ -1,5 +1,5 @@
 import numpy as np
-from mavcore.mav_message import MAVMessage
+from mavcore.mav_message import MAVMessage, thread_safe
 
 
 class GlobalPosition(MAVMessage):
@@ -30,15 +30,19 @@ class GlobalPosition(MAVMessage):
         self.vz = msg.vz / 100.0
         self.heading = msg.hdg / 100.0
 
+    @thread_safe
     def get_pos(self):
         return np.array([self.lat, self.lon, self.alt_relative])
 
+    @thread_safe
     def get_vel_ned(self):
         return (self.vx, self.vy, self.vz)
     
+    @thread_safe
     def get_vel_enu(self):
         return (self.vy, self.vx, -self.vz)
 
+    @thread_safe
     def __repr__(self) -> str:
         return f"(GLOBAL_POSITION_INT) timestamp: {self.timestamp} s \n \
             position: {self.get_pos()}, velocity: {self.get_vel_enu()}, heading: {self.heading}"
