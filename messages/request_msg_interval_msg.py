@@ -19,7 +19,11 @@ class RequestMessageInterval(MAVMessage):
     """
 
     def __init__(
-        self, target_system: int, target_component: int, msg_id: IntervalMessageID, rate_hz: float
+        self,
+        target_system: int,
+        target_component: int,
+        msg_id: IntervalMessageID,
+        rate_hz: float,
     ):
         super().__init__("MAV_CMD_SET_MESSAGE_INTERVAL")
         self.target_system = target_system
@@ -34,7 +38,7 @@ class RequestMessageInterval(MAVMessage):
             command=511,  # MAV_CMD_SET_MESSAGE_INTERVAL (511)
             confirmation=0,
             param1=float(self.msg_id.value),
-            param2=float((1.0 / self.rate_hz)*1000000), # interval in microseconds
+            param2=float((1.0 / self.rate_hz) * 1000000),  # interval in microseconds
             param3=0.0,
             param4=0.0,
             param5=0.0,

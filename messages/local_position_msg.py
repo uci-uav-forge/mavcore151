@@ -30,7 +30,7 @@ class LocalPosition(MAVMessage):
     @thread_safe
     def get_pos_ned(self) -> np.ndarray:
         return np.array([self.x, self.y, self.z])
-    
+
     @thread_safe
     def get_pos_enu(self) -> np.ndarray:
         return np.array([self.y, self.x, -self.z])
@@ -38,7 +38,7 @@ class LocalPosition(MAVMessage):
     @thread_safe
     def get_vel_ned(self) -> np.ndarray:
         return np.array([self.vx, self.vy, self.vz])
-    
+
     @thread_safe
     def get_vel_enu(self) -> np.ndarray:
         return np.array([self.vy, self.vx, -self.vz])

@@ -6,7 +6,7 @@ import queue
 
 def thread_safe(func):
     def wrapper(*args, **kwargs) -> Any:
-        self : MAVMessage = args[0]
+        self: MAVMessage = args[0]
         self._lock.acquire()
         output = func(*args, **kwargs)
         self._lock.release()
@@ -44,14 +44,14 @@ class MAVMessage:
         self._thread: None | threading.Thread = None
         self.submessages: list[MAVMessage] = []
         # For calculating receive rate
-        self.hz : float = 0.0 
-        self._pastdt : list[float] = []
-        '''
+        self.hz: float = 0.0
+        self._pastdt: list[float] = []
+        """
         Callback processing. Similar to ROS each listener has its own thread for processing messages so that
         one slow listener does not block others from being processed. There will be a queue of up to 15 messages
         for each listener. If the queue is full, the oldest message will be dropped.
-        '''
-        self._msg_queue : "queue.Queue[Any]" = queue.Queue(maxsize=15)
+        """
+        self._msg_queue: "queue.Queue[Any]" = queue.Queue(maxsize=15)
         self._decodethread: None | threading.Thread = None
         self._queuelock = threading.Lock()
         self.end = False
@@ -133,7 +133,7 @@ class MAVMessage:
             except queue.Empty:
                 time.sleep(0.02)
                 continue
-            time.sleep(0.02) # Assumes no message > 50 Hz
+            time.sleep(0.02)  # Assumes no message > 50 Hz
 
     @thread_safe
     def _encode(self, system_id, component_id) -> Any:
@@ -147,7 +147,7 @@ class MAVMessage:
         Returns this MAVMessage as a pymavlink friendly message.
         """
         pass
-    
+
     @thread_safe
     def _decode(self, msg):
         """
@@ -165,7 +165,7 @@ class MAVMessage:
     @thread_safe
     def __repr__(self) -> str:
         return f"({self.name}) timestamp: {self.timestamp} ms"
-    
+
     def __str__(self) -> str:
         return self.__repr__()
 

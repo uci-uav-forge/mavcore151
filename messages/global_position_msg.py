@@ -37,7 +37,7 @@ class GlobalPosition(MAVMessage):
     @thread_safe
     def get_vel_ned(self):
         return (self.vx, self.vy, self.vz)
-    
+
     @thread_safe
     def get_vel_enu(self):
         return (self.vy, self.vx, -self.vz)
