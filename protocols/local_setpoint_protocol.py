@@ -40,7 +40,7 @@ class LocalSetpointProtocol(MAVProtocol):
             waypoint_coords = np.array([waypoint.x, waypoint.y, waypoint.z])
             self.setpoint_msg.load(target=waypoint_coords)
             while (
-                np.linalg.norm(waypoint_coords - self.current_pos.get_pos())
+                np.linalg.norm(waypoint_coords - self.current_pos.get_pos_ned())
                 > waypoint.radius
             ):
                 sender.send_msg(self.setpoint_msg)
