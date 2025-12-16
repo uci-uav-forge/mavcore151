@@ -18,7 +18,6 @@ class LocalPosition(MAVMessage):
         self.vy = 0.0  # in m/s
         self.vz = 0.0  # in m/s
 
-    @thread_safe
     def decode(self, msg):
         self.time_boot_ms = msg.time_boot_ms
         self.x = msg.x
@@ -44,6 +43,7 @@ class LocalPosition(MAVMessage):
     def get_vel_enu(self) -> np.ndarray:
         return np.array([self.vy, self.vx, -self.vz])
 
+    @thread_safe
     def __repr__(self) -> str:
         return f"(LOCAL_POSITION) timestamp: {self.timestamp} s \n \
             position: {self.get_pos_enu()}, velocity: {self.get_vel_enu()}"

@@ -2,7 +2,7 @@ from enum import Enum
 from typing import Any
 import pymavlink.dialects.v20.all as dialect
 
-from mavcore.mav_message import MAVMessage
+from mavcore.mav_message import MAVMessage, thread_safe
 
 
 class BatteryFunction(Enum):
@@ -51,6 +51,7 @@ class BatteryStatus(MAVMessage):
         self.energy_consumed = msg.energy_consumed
         self.soc = msg.battery_remaining
 
+    @thread_safe
     def encode(self, system_id, component_id) -> Any:
         return dialect.MAVLink_battery_status_message(
             id=self.bat_id,

@@ -25,12 +25,13 @@ class Receiver:
                 target_dict[msg.name].append(msg)
             else:
                 target_dict[msg.name] = [msg]
+            msg._start_callback_thread()
         return msg
 
     def add_listener(self, msg: MAVMessage) -> MAVMessage:
         return self.__add_to_dict(self.listeners, msg)
 
-    def __add_waiter(self, msg: MAVMessage) -> MAVMessage:
+    def _add_waiter(self, msg: MAVMessage) -> MAVMessage:
         return self.__add_to_dict(self.waiting, msg)
 
     def remove_listener(self, msg: MAVMessage | str) -> bool:
@@ -68,9 +69,8 @@ class Receiver:
             # Check if waiting for this message
             if msg_name in self.waiting:
                 for wait_msg in self.waiting[msg_name]:
-                    wait_msg.timestamp = timestamp
-                    wait_msg.decode(msg)
-                    wait_msg.process()
+                    wait_msg.update_timestamp(timestamp)
+                    wait_msg.process_message(msg)
                 self.waiting.pop(msg_name)
 
             # Update listeners
@@ -78,8 +78,7 @@ class Receiver:
                 for listener in self.listeners[msg_name]:
                     if listener.timestamp < timestamp:
                         listener.update_timestamp(timestamp)
-                        listener.decode(msg)
-                        listener.process()
+                        listener.process_message(msg)
 
             # Manage message history
             if msg_name in self.history_dict:
@@ -96,7 +95,7 @@ class Receiver:
         self, msg: MAVMessage, timeout_seconds: float = -1.0, blocking=True
     ) -> MAVMessage:
         """
-        Will wait for msg to occur. Once it does, will return the updated object.
+        Will wait for msg to occur. Once it does, will return the updated object. <br>
         If blocking will return a FutureMsg.
         """
         if not blocking:
@@ -108,7 +107,7 @@ class Receiver:
 
         timeout_timer = time.time()
         msg.timestamp = 0.0
-        self.__add_waiter(msg)
+        self._add_waiter(msg)
         while msg.timestamp == 0.0 and (
             timeout_seconds < 0 or time.time() - timeout_timer < timeout_seconds
         ):
