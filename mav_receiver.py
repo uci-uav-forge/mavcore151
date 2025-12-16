@@ -98,6 +98,7 @@ class Receiver:
         Will wait for msg to occur. Once it does, will return the updated object. <br>
         If blocking will return a FutureMsg.
         """
+        msg._decoded = False
         if not blocking:
             msg._thread = threading.Thread(
                 target=lambda: self.wait_for_msg(msg), daemon=True
@@ -108,7 +109,7 @@ class Receiver:
         timeout_timer = time.time()
         msg.timestamp = 0.0
         self._add_waiter(msg)
-        while msg.timestamp == 0.0 and (
+        while (msg.timestamp == 0.0 or not msg._decoded) and (
             timeout_seconds < 0 or time.time() - timeout_timer < timeout_seconds
         ):
             time.sleep(0.01)

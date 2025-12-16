@@ -56,6 +56,8 @@ class MAVMessage:
         self._queuelock = threading.Lock()
         self.end = False
 
+        self._decoded = False  # Set False on wait_for_msg, True after decoded
+
     def __del__(self):
         self.stop_callback_thread()
 
@@ -154,6 +156,7 @@ class MAVMessage:
         Thread-safe wrapper for decode. Do not override this method.
         """
         self.decode(msg)
+        self._decoded = True
         self.callback_func(self)
 
     def decode(self, msg):
@@ -176,7 +179,7 @@ class MAVMessage:
         if type(self._thread) is not threading.Thread:
             return
 
-        while self._thread.is_alive():
+        while self._thread.is_alive() or not self._decoded:
             time.sleep(0.1)
         self._thread = None
 
