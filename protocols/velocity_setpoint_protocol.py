@@ -1,6 +1,6 @@
 from mavcore.mav_protocol import MAVProtocol
 from mavcore.messages import SetpointVelocity, CommandAck, LocalPositionNED
-from gnc.types import Waypoint
+from gnc.util.types import Waypoint
 import time
 import numpy as np
 

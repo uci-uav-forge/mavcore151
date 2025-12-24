@@ -2,7 +2,7 @@ from mavcore.mav_protocol import MAVProtocol
 from mavcore.messages.local_position_msg import LocalPosition as LocalPositionNED
 from mavcore.messages.command_ack_msg import CommandAck
 from mavcore.messages.setpoint_local_msg import SetpointLocal
-from gnc.types import Waypoint
+from gnc.util.types import Waypoint
 import time
 import numpy as np
 
