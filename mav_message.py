@@ -1,6 +1,7 @@
 from typing import Any, Callable
 import time
 import threading
+import queue
 
 
 def thread_safe(func):
@@ -32,34 +33,116 @@ class MAVMessage:
         repeat_period: the interval at which the message will be repeatedly sent
         callback_func: a function that will be executed when this message is recieved and processed,
             this message instance is passed in to the first and only argument.
+        non_blocking: if true, the callback function will be executed in a new thread
         """
         self.name = name
         self.timestamp = timestamp
         self.priority = priority
         self.repeat_period = repeat_period
         self.callback_func = callback_func
-        self._lock = threading.Lock()
+        self._lock = threading.RLock()
         self._thread: None | threading.Thread = None
         self.submessages: list[MAVMessage] = []
-        self.hz = 0.0  # calculated receive rate
-        self._10past = []
+        # For calculating receive rate
+        self.hz: float = 0.0
+        self._pastdt: list[float] = []
+        """
+        Callback processing. Similar to ROS each listener has its own thread for processing messages so that
+        one slow listener does not block others from being processed. There will be a queue of up to 15 messages
+        for each listener. If the queue is full, the oldest message will be dropped.
+        """
+        self._msg_queue: "queue.Queue[Any]" = queue.Queue(maxsize=15)
+        self._decodethread: None | threading.Thread = None
+        self._queuelock = threading.Lock()
+        self.end = False
 
+        self._decoded = False  # Set False on wait_for_msg, True after decoded
+
+    def __del__(self):
+        self.stop_callback_thread()
+
+    @thread_safe
     def update_timestamp(self, timestamp: float):
+        """
+        Thread-safe for updating the timestamp and calculating the receive rate (hz).
+        Do not override this method.
+        """
         if self.timestamp == 0.0:
             self.timestamp = timestamp
             return
         dt = timestamp - self.timestamp
-        self._10past.append(dt)
-        if len(self._10past) > 10:
-            self._10past.pop(0)
-        self.hz = len(self._10past) / sum(self._10past)
+        self._pastdt.append(dt)
+        if len(self._pastdt) > 10:
+            self._pastdt.pop(0)
+        self.hz = len(self._pastdt) / sum(self._pastdt)
         self.timestamp = timestamp
 
-    def process(self):
+    @thread_safe
+    def get_hz(self) -> float:
         """
-        automatically executes in main loop when receiving this message.
+        Thread-safe for getting the receive rate (hz).
+        Do not override this method.
         """
-        self.callback_func(self)
+        return int(self.hz)
+
+    @thread_safe
+    def _start_callback_thread(self):
+        """
+        Starts the internal thread for processing the decode and callback function. <br>
+        Do not override this method.
+        """
+        if self._decodethread is not None and self._decodethread.is_alive():
+            return  # Thread is already running
+        self.end = False
+        self._decodethread = threading.Thread(target=self._process, daemon=True)
+        self._decodethread.start()
+
+    @thread_safe
+    def stop_callback_thread(self):
+        """
+        Stops the internal thread for processing the decode and callback function. <br>
+        Do not override this method.
+        """
+        self.end = True
+        if self._decodethread is not None:
+            self._decodethread.join()
+            self._decodethread = None
+
+    @thread_safe
+    def process_message(self, msg: Any):
+        """
+        Adds a message to the internal queue for processing. <br>
+        Do not override this method.
+        """
+        with self._queuelock:
+            if self._msg_queue.full():
+                try:
+                    self._msg_queue.get_nowait()
+                except queue.Empty:
+                    pass
+            self._msg_queue.put(msg)
+
+    def _process(self):
+        """
+        Internal method for processing the decode and callback function. <br>
+        Do not override this method.
+        """
+        while not self.end:
+            try:
+                with self._queuelock:
+                    msg = self._msg_queue.get(timeout=0.1)
+                self._decode(msg)
+            except queue.Empty:
+                time.sleep(0.02)
+                continue
+            time.sleep(0.02)  # Assumes no message > 50 Hz
+
+    @thread_safe
+    def _encode(self, system_id, component_id) -> Any:
+        """
+        Thread-safe wrapper for encode. Do not override this method.
+        """
+        return self.encode(system_id, component_id)
 
     def encode(self, system_id, component_id) -> Any:
         """
@@ -67,22 +150,41 @@ class MAVMessage:
         """
         pass
 
+    @thread_safe
+    def _decode(self, msg):
+        """
+        Thread-safe wrapper for decode. Do not override this method.
+        """
+        self.decode(msg)
+        self._decoded = True
+        self.callback_func(self)
+
     def decode(self, msg):
         """
         Transforms this MAVMessage based off of a pymavlink message that was received.
         """
         pass
 
+    @thread_safe
     def __repr__(self) -> str:
         return f"({self.name}) timestamp: {self.timestamp} ms"
 
+    def __str__(self) -> str:
+        return self.__repr__()
+
     def wait_until_finished(self):
+        """
+        Blocks until the internal wait thread is finished executing.
+        """
         if type(self._thread) is not threading.Thread:
             return
 
-        while self._thread.is_alive():
+        while self._thread.is_alive() or not self._decoded:
             time.sleep(0.1)
         self._thread = None
 
     def is_finished(self) -> bool:
+        """
+        Returns whether the internal wait thread is finished executing.
+        """
         return self._thread is None

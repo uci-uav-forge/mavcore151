@@ -1,4 +1,4 @@
-from mavcore.mav_message import MAVMessage
+from mavcore.mav_message import MAVMessage, thread_safe
 from mavcore.messages.attitude_msg import Attitude
 from mavcore.messages.attitude_quat_msg import AttitudeQuat
 from mavcore.messages.local_position_msg import LocalPosition
@@ -46,17 +46,17 @@ class FullPose(MAVMessage):
             timestamp=self.local_position.timestamp,
         )
 
+    @thread_safe
     def get_local_velocity(self) -> np.ndarray:
         return self.local_position.get_vel_enu()
 
+    @thread_safe
     def get_global_position(self) -> np.ndarray:
         return self.global_position.get_pos()
 
+    @thread_safe
     def get_global_velocity(self) -> np.ndarray:
         return np.array(self.global_position.get_vel())
-
-    def __repr__(self) -> str:
-        return f"(FULL_POSE) timestamp: {self.timestamp} ms,\n  {self.attitude}\n  {self.local_position}\n  {self.global_position}"
 
     def pose_callback(self, msg):
         """
@@ -66,11 +66,11 @@ class FullPose(MAVMessage):
         current_pose = self.get_local_position()
         if abs(self.attitude.timestamp - self.local_position.timestamp) > 0.1:
             print(
-                "Warning: Discarding pose since Attitude and Local Position timestamps differ by more than 100 ms."
+                f"Warning: Discarding pose since Attitude({self.attitude.get_hz()}hz) and Local Position({self.local_position.get_hz()}hz) timestamps differ by more than 100 ms."
             )
             return
-        self.timestamp = np.average(
-            [self.attitude.timestamp, self.local_position.timestamp]
+        self.update_timestamp(
+            np.average([self.attitude.timestamp, self.local_position.timestamp])
         )
 
         self.pose_buffer.append(current_pose)

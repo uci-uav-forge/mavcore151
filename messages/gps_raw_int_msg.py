@@ -1,6 +1,6 @@
 from enum import Enum
 
-from mavcore.mav_message import MAVMessage
+from mavcore.mav_message import MAVMessage, thread_safe
 
 
 class FixType(Enum):
@@ -31,5 +31,6 @@ class GPSRaw(MAVMessage):
         self.sats = msg.satellites_visible
         self.usec = msg.time_usec
 
+    @thread_safe
     def __repr__(self) -> str:
         return f"(GPS_RAW_INT) timestamp: {self.timestamp} s, fix_type: {self.fix_type.name}, sats: {self.sats}"
