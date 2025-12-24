@@ -5,6 +5,7 @@ from mavcore.mav_message import MAVMessage, thread_safe
 
 
 class IntervalMessageID(Enum):
+    SYSTEM_TIME = 2
     GPS_RAW_INT = 24
     ATTITUDE = 30
     ATTITUDE_QUATERNION = 31
