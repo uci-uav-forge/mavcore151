@@ -7,27 +7,29 @@ class RCOverrideProtocol(MAVProtocol):
     RC Override Protocol to send RC channel override commands.
     """
 
-    def __init__(self, target_system: int = 1, 
-                target_component: int = 0,
-                channel1 = 0,
-                channel2 = 0,
-                channel3 = 0,
-                channel4 = 0,
-                channel5 = 0,
-                channel6 = 0,
-                channel7 = 0,
-                channel8 = 0,
-                channel9 = 0,
-                channel10 = 0,
-                channel11 = 0,
-                channel12 = 0,
-                channel13 = 0,
-                channel14 = 0,
-                channel15 = 0,
-                channel16 = 0,
-                channel17 = 0,
-                channel18 = 0
-                 ):
+    def __init__(
+        self,
+        target_system: int = 1,
+        target_component: int = 0,
+        channel1=0,
+        channel2=0,
+        channel3=0,
+        channel4=0,
+        channel5=0,
+        channel6=0,
+        channel7=0,
+        channel8=0,
+        channel9=0,
+        channel10=0,
+        channel11=0,
+        channel12=0,
+        channel13=0,
+        channel14=0,
+        channel15=0,
+        channel16=0,
+        channel17=0,
+        channel18=0,
+    ):
         super().__init__()
         self.target_system = target_system
         self.target_component = target_component
@@ -52,7 +54,7 @@ class RCOverrideProtocol(MAVProtocol):
             channel15=channel15,
             channel16=channel16,
             channel17=channel17,
-            channel18=channel18
+            channel18=channel18,
         )
 
     def run(self, sender, receiver):

@@ -9,28 +9,28 @@ class RCOverride(MAVMessage):
     """
 
     def __init__(
-            self, 
-            target_system: int, 
-            target_component: int, 
-            channel1 = 0,
-            channel2 = 0,
-            channel3 = 0,
-            channel4 = 0,
-            channel5 = 0,
-            channel6 = 0,
-            channel7 = 0,
-            channel8 = 0,
-            channel9 = 0,
-            channel10 = 0,
-            channel11 = 0,
-            channel12 = 0,
-            channel13 = 0,
-            channel14 = 0,
-            channel15 = 0,
-            channel16 = 0,
-            channel17 = 0,
-            channel18 = 0
-            ):
+        self,
+        target_system: int,
+        target_component: int,
+        channel1=0,
+        channel2=0,
+        channel3=0,
+        channel4=0,
+        channel5=0,
+        channel6=0,
+        channel7=0,
+        channel8=0,
+        channel9=0,
+        channel10=0,
+        channel11=0,
+        channel12=0,
+        channel13=0,
+        channel14=0,
+        channel15=0,
+        channel16=0,
+        channel17=0,
+        channel18=0,
+    ):
         super().__init__("RC_CHANNELS_OVERRIDE")
         self.target_system = target_system
         self.target_component = target_component
@@ -74,7 +74,7 @@ class RCOverride(MAVMessage):
             chan15_raw=self.channel15,
             chan16_raw=self.channel16,
             chan17_raw=self.channel17,
-            chan18_raw=self.channel18
+            chan18_raw=self.channel18,
         )
 
     @thread_safe
