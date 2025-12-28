@@ -20,9 +20,7 @@ class RCOverrideProtocol(MAVProtocol):
         self.channels = channels
 
         self.rc_override_msg = RCOverride(
-            self.target_system,
-            self.target_component,
-            channels
+            self.target_system, self.target_component, channels
         )
 
     def run(self, sender, receiver):
