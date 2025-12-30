@@ -3,7 +3,7 @@ import threading
 import pymavlink.mavutil as utility
 
 from mavcore.mav_message import MAVMessage
-
+import mavcore
 
 class Sender:
     def __init__(
@@ -51,12 +51,20 @@ class Sender:
 
         self._check_disconnect()
 
+        if isinstance(msg, mavcore.messages.RCOverride):
+            self._old_src = self.connection.source_system
+            self.connection.mav.srcSystem = 255
+
         mav_msg = msg._encode(
             self.sys_id if not system_id else system_id,
             self.component_id if not component_id else component_id,
         )
         self.connection.mav.send(mav_msg)
         msg.timestamp = time.time() * 1000
+
+        if isinstance(msg, mavcore.messages.RCOverride):
+            self.connection.mav.srcSystem = self._old_src
+
         if msg.repeat_period != 0.0:
             self.repeating_msgs.append((msg, system_id, component_id))
 
