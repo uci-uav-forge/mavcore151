@@ -46,6 +46,7 @@ class Sender:
         Sends a mavlink message. Must have aquired the lock (automatic if using run protocol).
         Optional specified system and component ids otherwise connection defaults used.
         """
+        self.acquire()
         if not self._is_owned():
             raise RuntimeError("Current thread does not own the lock")
 
@@ -67,6 +68,8 @@ class Sender:
 
         if msg.repeat_period != 0.0:
             self.repeating_msgs.append((msg, system_id, component_id))
+        
+        self.release()
 
     def repeat_loop(self):
         """
