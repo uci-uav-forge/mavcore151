@@ -5,6 +5,7 @@ import pymavlink.mavutil as utility
 from mavcore.mav_message import MAVMessage
 import mavcore
 
+
 class Sender:
     def __init__(
         self,
@@ -68,7 +69,7 @@ class Sender:
 
         if msg.repeat_period != 0.0:
             self.repeating_msgs.append((msg, system_id, component_id))
-        
+
         self.release()
 
     def repeat_loop(self):
