@@ -39,5 +39,6 @@ class AttitudeSetpointProtocol(MAVProtocol):
             if gs > highest:
                 highest = gs
             #print(f"highest G: {highest}", flush=True)
+            #change test
 
         
