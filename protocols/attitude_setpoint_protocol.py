@@ -23,8 +23,8 @@ class AttitudeSetpointProtocol(MAVProtocol):
         self.target_system = target_system
         self.target_component = target_component
 
-        self.q = np.array([0.0, 1.0, 0.0, 0.0])
-        self.thrust = 0.1
+        self.q = np.array([0.848, 0.0, -0.530, 0.0])
+        self.thrust = 0.15
 
         self.setpoint_msg = SetpointAttitude(
             self.target_system, self.target_component, self.boot_time_ms, self.q, self.thrust
@@ -32,7 +32,7 @@ class AttitudeSetpointProtocol(MAVProtocol):
 
     def run(self, sender, receiver):
         highest = 0.0
-        while self.current_pos.get_pos_ned()[2] < -200.0:
+        while self.current_pos.get_pos_ned()[2] < -50.0:
             sender.send_msg(self.setpoint_msg)
             time.sleep(0.02)
             gs = np.linalg.norm([self.imu.xac, self.imu.yac, self.imu.zac])

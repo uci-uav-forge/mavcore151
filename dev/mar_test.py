@@ -35,10 +35,10 @@ device.run_protocol(request_arm)
 request_guided = protocols.SetModeProtocol(messages.FlightMode.GUIDED)
 device.run_protocol(request_guided)
 
-takeoff = protocols.TakeoffProtocol(300.0)
+takeoff = protocols.TakeoffProtocol(100.0)
 device.run_protocol(takeoff)
 
-while local_pos.get_pos_ned()[2] > -295.0:
+while local_pos.get_pos_ned()[2] > -95.0:
     print(f"Altitude: {local_pos.get_pos_ned()[2]} m", flush=True)
     time.sleep(1)
 
